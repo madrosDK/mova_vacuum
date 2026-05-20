@@ -30,9 +30,12 @@
           ]
         },
         {
-          "type": "ValidationTextBox",
+          "type": "Select",
           "name": "DeviceID",
-          "caption": "Device-ID / did (leer = Geraeteliste verwenden)"
+          "caption": "Gefundenes Geraet",
+          "options": [
+            { "caption": "Bitte Geraet suchen und auswaehlen", "value": "" }
+          ]
         },
         {
           "type": "ValidationTextBox",

@@ -96,9 +96,24 @@ class MovaVacuum extends IPSModule
         $this->RegisterAttributeString('RefreshToken', '');
         $this->RegisterAttributeInteger('TokenExpires', 0);
         $this->RegisterAttributeString('DeviceRaw', '');
+        $this->RegisterAttributeString('DiscoveredDevices', '[]');
         $this->RegisterAttributeString('LastDeviceID', '');
 
         $this->RegisterTimer(self::TIMER_UPDATE, 0, 'MOVA_Update($_IPS[\'TARGET\']);');
+    }
+
+    public function GetConfigurationForm()
+    {
+        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        if (!is_array($form)) {
+            return '{}';
+        }
+
+        if (isset($form['elements']) && is_array($form['elements'])) {
+            $this->InjectDeviceOptions($form['elements']);
+        }
+
+        return json_encode($form, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     public function ApplyChanges()
@@ -140,6 +155,8 @@ class MovaVacuum extends IPSModule
         $this->EnableAction('SuctionLevel');
         $this->EnableAction('WaterVolume');
         $this->EnableAction('CleaningMode');
+
+        $this->SyncSelectedDevice();
 
         if ($this->ReadPropertyString('Username') === '' || $this->ReadPropertyString('Password') === '') {
             $this->SetStatus(104);
@@ -184,17 +201,21 @@ class MovaVacuum extends IPSModule
             ], true);
             $this->SetValueSafe('LastResponse', $this->Encode($devices));
 
-            $found = $this->FindDevice($devices);
+            $records = $this->FindDevices($devices);
+            $this->WriteAttributeString('DiscoveredDevices', $this->Encode($records));
+
+            $found = $this->FindDevice($records);
             if ($found === null) {
                 $this->Log('Kein passendes Geraet gefunden. LastResponse pruefen.');
                 return false;
             }
 
-            $did = (string)($found['did'] ?? $found['deviceId'] ?? '');
-            $this->WriteAttributeString('DeviceRaw', $this->Encode($found));
-            $this->WriteAttributeString('LastDeviceID', $did);
-            $this->SetValueSafe('DeviceName', (string)($found['customName'] ?? $found['name'] ?? $found['deviceInfo']['displayName'] ?? $found['model'] ?? $did));
-            $this->Log('Geraet gefunden: did=' . $did . ', model=' . ($found['model'] ?? 'unbekannt'));
+            $selected = $this->ReadPropertyString('DeviceID');
+            if ($selected !== '' || count($records) === 1) {
+                $this->UseDevice($found);
+            }
+
+            $this->Log(count($records) . ' Geraet(e) gefunden. Auswahl im Feld "Gefundenes Geraet" pruefen und uebernehmen.');
             return true;
         } catch (Exception $e) {
             $this->HandleException('Login/Geraetesuche', $e);
@@ -514,8 +535,19 @@ class MovaVacuum extends IPSModule
 
     private function FindDevice($response): ?array
     {
+        $selected = $this->ReadPropertyString('DeviceID');
         $model = $this->ReadPropertyString('Model');
-        $records = $this->Flatten($response);
+        $records = $this->FindDevices($response);
+
+        if ($selected !== '') {
+            foreach ($records as $item) {
+                $did = (string)($item['did'] ?? $item['deviceId'] ?? '');
+                if ($did === $selected) {
+                    return $item;
+                }
+            }
+        }
+
         foreach ($records as $item) {
             if (!is_array($item)) {
                 continue;
@@ -526,6 +558,133 @@ class MovaVacuum extends IPSModule
             }
         }
         return null;
+    }
+
+    private function FindDevices($response): array
+    {
+        $records = [];
+        $seen = [];
+
+        foreach ($this->Flatten($response) as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $did = (string)($item['did'] ?? $item['deviceId'] ?? '');
+            if ($did === '' || isset($seen[$did])) {
+                continue;
+            }
+
+            $seen[$did] = true;
+            $records[] = $item;
+        }
+
+        return $records;
+    }
+
+    private function UseDevice(array $device): void
+    {
+        $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+        if ($did === '') {
+            return;
+        }
+
+        $this->WriteAttributeString('DeviceRaw', $this->Encode($device));
+        $this->WriteAttributeString('LastDeviceID', $did);
+        $this->SetValueSafe('DeviceName', $this->DeviceCaption($device));
+        $this->Log('Aktives Geraet: ' . $this->DeviceCaption($device) . ' (' . $did . ')');
+    }
+
+    private function SyncSelectedDevice(): void
+    {
+        $selected = $this->ReadPropertyString('DeviceID');
+        if ($selected === '') {
+            return;
+        }
+
+        foreach ($this->GetDiscoveredDevices() as $device) {
+            $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+            if ($did === $selected) {
+                $this->UseDevice($device);
+                return;
+            }
+        }
+
+        $this->WriteAttributeString('LastDeviceID', $selected);
+    }
+
+    private function GetDiscoveredDevices(): array
+    {
+        $devices = json_decode($this->ReadAttributeString('DiscoveredDevices'), true);
+        return is_array($devices) ? $devices : [];
+    }
+
+    private function InjectDeviceOptions(array &$elements): void
+    {
+        foreach ($elements as &$element) {
+            if (($element['name'] ?? '') === 'DeviceID') {
+                $element['type'] = 'Select';
+                $element['caption'] = 'Gefundenes Geraet';
+                $element['options'] = $this->BuildDeviceOptions();
+                continue;
+            }
+
+            if (isset($element['items']) && is_array($element['items'])) {
+                $this->InjectDeviceOptions($element['items']);
+            }
+        }
+    }
+
+    private function BuildDeviceOptions(): array
+    {
+        $options = [
+            [
+                'caption' => 'Bitte Geraet suchen und auswaehlen',
+                'value' => '',
+            ],
+        ];
+
+        $current = $this->ReadPropertyString('DeviceID');
+        $hasCurrent = $current === '';
+        foreach ($this->GetDiscoveredDevices() as $device) {
+            $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+            if ($did === '') {
+                continue;
+            }
+
+            $hasCurrent = $hasCurrent || $did === $current;
+            $options[] = [
+                'caption' => $this->DeviceCaption($device) . ' - ' . $did,
+                'value' => $did,
+            ];
+        }
+
+        if (!$hasCurrent) {
+            $options[] = [
+                'caption' => 'Aktuell eingetragen - ' . $current,
+                'value' => $current,
+            ];
+        }
+
+        return $options;
+    }
+
+    private function DeviceCaption(array $device): string
+    {
+        $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+        $model = (string)($device['model'] ?? '');
+        $name = (string)($device['customName'] ?? $device['name'] ?? $device['deviceInfo']['displayName'] ?? '');
+
+        if ($name !== '' && $model !== '') {
+            return $name . ' (' . $model . ')';
+        }
+        if ($name !== '') {
+            return $name;
+        }
+        if ($model !== '') {
+            return $model;
+        }
+        return $did !== '' ? $did : 'Unbekanntes Geraet';
     }
 
     private function Flatten($value): array
