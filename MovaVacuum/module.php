@@ -1165,4 +1165,52 @@ class MovaVacuum extends IPSModule
         $this->SetValueSafe('LastResponse', $this->Encode($result));
         return $result;
     }
+    public function TestAliCommand(string $method, string $jsonParams)
+    {
+        try {
+            $did = $this->GetDeviceID();
+
+            $params = json_decode($jsonParams, true);
+            if ($params === null && $jsonParams !== 'null') {
+                throw new Exception('Parameter sind kein gültiges JSON');
+            }
+
+            $payload = [
+                'did' => $did,
+                'id' => time(),
+                'data' => [
+                    'did' => $did,
+                    'id' => time(),
+                    'method' => $method,
+                    'params' => $params
+                ]
+            ];
+
+            $result = $this->HttpRequest(
+                $this->CommandUrl(),
+                json_encode($payload),
+                true,
+                true
+            );
+
+            $this->SetValueSafe('LastResponse', $this->Encode($result));
+            return $result;
+
+        } catch (Exception $e) {
+            $this->HandleException('Ali Test', $e);
+            return false;
+        }
+    }
+
+    public function RunAliTests()
+    {
+        // Test 1
+        $this->TestAliCommand('getDeviceStatus', '[]');
+
+        // Test 2
+        $this->TestAliCommand('getDeviceData', '[]');
+
+        // Test 3 (WICHTIG)
+        $this->TestAliCommand('get_props', '["2.1","3.1","4.2","4.3","4.4","4.5"]');
+    }
 }

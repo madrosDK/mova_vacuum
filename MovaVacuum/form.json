@@ -62,6 +62,11 @@
       "type": "Button",
       "caption": "Test get_properties (fast)",
       "onClick": "MOVA_TestFastProperties($id);"
+    },
+    {
+      "type": "Button",
+      "caption": "Ali Test (alle)",
+      "onClick": "$this->RunAliTests();"
     }
   ]
 },
