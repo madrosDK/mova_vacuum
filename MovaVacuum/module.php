@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/MiioCloud.php';
+
 class MovaVacuum extends IPSModule
 {
     private const TIMER_UPDATE = 'UpdateTimer';
@@ -133,12 +135,21 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyString('ExplorerPath', '/dreame-user-iot/iotuserdata/getDeviceData');
         $this->RegisterPropertyString('ExplorerPayload', '{"did":"","model":[{"siid":2,"piid":1},{"siid":3,"piid":1},{"siid":4,"piid":2},{"siid":4,"piid":3}]}');
 
+        $this->RegisterPropertyString('XiaomiUsername', '');
+        $this->RegisterPropertyString('XiaomiPassword', '');
+        $this->RegisterPropertyString('XiaomiCountry', 'de');
+        $this->RegisterPropertyString('XiaomiDeviceID', '');
+
+        
+
         $this->RegisterAttributeString('AccessToken', '');
         $this->RegisterAttributeString('RefreshToken', '');
         $this->RegisterAttributeInteger('TokenExpires', 0);
         $this->RegisterAttributeString('DeviceRaw', '');
         $this->RegisterAttributeString('DiscoveredDevices', '[]');
         $this->RegisterAttributeString('LastDeviceID', '');
+        $this->RegisterAttributeString('MiioAuthKey', '');
+        $this->RegisterAttributeString('MiioClientID', '');
 
         $this->RegisterTimer(self::TIMER_UPDATE, 0, 'MOVA_Update($_IPS[\'TARGET\']);');
     }
@@ -700,7 +711,6 @@ class MovaVacuum extends IPSModule
 
     private function CommandUrl(): string
     {
-        throw new Exception('IoT Endpoint blockiert');
         $raw = $this->ReadAttributeString('DeviceRaw');
 
         if ($raw !== '') {
@@ -712,7 +722,6 @@ class MovaVacuum extends IPSModule
             }
         }
 
-        // Fallback (alter Weg)
         return $this->BaseUrl() . '/dreame-iot-com-20000/device/sendCommand';
     }
 
@@ -1238,6 +1247,108 @@ class MovaVacuum extends IPSModule
 
         } catch (Exception $e) {
             $this->HandleException('Command', $e);
+            return false;
+        }
+    }
+
+
+
+    private function MiioCloud(): MovaMiioCloud
+    {
+        $username = $this->ReadPropertyString('XiaomiUsername');
+        $password = $this->ReadPropertyString('XiaomiPassword');
+        $country = $this->ReadPropertyString('XiaomiCountry');
+        $clientId = $this->ReadAttributeString('MiioClientID');
+
+        if ($username === '' || $password === '') {
+            throw new Exception('Xiaomi Zugangsdaten fehlen.');
+        }
+
+        $cloud = new MovaMiioCloud($username, $password, $country, $clientId);
+
+        $authKey = $this->ReadAttributeString('MiioAuthKey');
+        if ($authKey !== '') {
+            $cloud->setAuthKey($authKey);
+        }
+
+        return $cloud;
+    }
+
+    private function XiaomiDid(): string
+    {
+        $did = trim($this->ReadPropertyString('XiaomiDeviceID'));
+        if ($did !== '') {
+            return $did;
+        }
+
+        return $this->GetDeviceID();
+    }
+
+    public function XiaomiLoginTest()
+    {
+        try {
+            $cloud = $this->MiioCloud();
+            $result = $cloud->login();
+
+            $this->WriteAttributeString('MiioAuthKey', (string)($result['authKey'] ?? ''));
+            $this->WriteAttributeString('MiioClientID', (string)($result['clientId'] ?? $cloud->getClientId()));
+
+            $safe = $result;
+            if (isset($safe['authKey'])) {
+                $safe['authKey'] = '[gespeichert]';
+            }
+
+            $this->SetValueSafe('LastResponse', $this->Encode($safe));
+            return true;
+        } catch (Exception $e) {
+            $this->HandleException('Xiaomi Login Test', $e);
+            return false;
+        }
+    }
+
+    public function XiaomiGetPropertiesTest()
+    {
+        try {
+            $did = $this->XiaomiDid();
+            $result = $this->MiioCloud()->getProperties($did, [
+                ['did' => '2.1', 'siid' => 2, 'piid' => 1],
+                ['did' => '2.2', 'siid' => 2, 'piid' => 2],
+                ['did' => '3.1', 'siid' => 3, 'piid' => 1],
+                ['did' => '3.2', 'siid' => 3, 'piid' => 2],
+            ]);
+
+            $this->SetValueSafe('LastResponse', $this->Encode($result));
+            return $result;
+        } catch (Exception $e) {
+            $this->HandleException('Xiaomi GetProperties Test', $e);
+            return false;
+        }
+    }
+
+    public function XiaomiStartTest()
+    {
+        return $this->XiaomiActionTest(2, 1, 'Xiaomi Start Test');
+    }
+
+    public function XiaomiPauseTest()
+    {
+        return $this->XiaomiActionTest(2, 2, 'Xiaomi Pause Test');
+    }
+
+    public function XiaomiDockTest()
+    {
+        return $this->XiaomiActionTest(3, 1, 'Xiaomi Dock Test');
+    }
+
+    private function XiaomiActionTest(int $siid, int $aiid, string $label)
+    {
+        try {
+            $did = $this->XiaomiDid();
+            $result = $this->MiioCloud()->action($did, $siid, $aiid, []);
+            $this->SetValueSafe('LastResponse', $this->Encode($result));
+            return $result;
+        } catch (Exception $e) {
+            $this->HandleException($label, $e);
             return false;
         }
     }
