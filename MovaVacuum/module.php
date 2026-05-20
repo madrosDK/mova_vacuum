@@ -435,6 +435,7 @@ class MovaVacuum extends IPSModule
 
     public function SendRpc(string $method, $params)
     {
+        throw new Exception('IoT aktuell deaktiviert');
         $this->Login(false);
         $did = $this->GetDeviceID();
         if ($did === '') {
@@ -693,6 +694,7 @@ class MovaVacuum extends IPSModule
 
     private function CommandUrl(): string
     {
+        throw new Exception('IoT Endpoint blockiert');
         $raw = $this->ReadAttributeString('DeviceRaw');
 
         if ($raw !== '') {
