@@ -2,22 +2,21 @@
   "elements": [
     {
       "type": "Label",
-      "label": "MOVA Vacuum (MOVAhome / P50 Pro Ultra)"
+      "label": "MOVAhome Cloud Modul - Testversion fuer MOVA P50 Pro Ultra"
     },
-
     {
       "type": "ExpansionPanel",
-      "caption": "Zugangsdaten",
+      "caption": "MOVAhome Zugang",
       "items": [
         {
           "type": "ValidationTextBox",
           "name": "Username",
-          "caption": "E-Mail"
+          "caption": "MOVAhome E-Mail"
         },
         {
           "type": "PasswordTextBox",
           "name": "Password",
-          "caption": "Passwort"
+          "caption": "MOVAhome Passwort"
         },
         {
           "type": "Select",
@@ -31,72 +30,147 @@
           ]
         },
         {
-          "type": "ValidationTextBox",
+          "type": "Select",
           "name": "DeviceID",
-          "caption": "Device-ID (aus Debug)"
+          "caption": "Gefundenes Geraet",
+          "options": [
+            { "caption": "Bitte Geraet suchen und auswaehlen", "value": "" }
+          ]
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "Model",
+          "caption": "Modellfilter (optional)"
         }
       ]
     },
-
+    {
+  "type": "ExpansionPanel",
+  "caption": "FastCommand Tests",
+  "items": [
+    {
+      "type": "Button",
+      "caption": "Ali Test getDeviceStatus",
+      "onClick": "MOVA_TestAliCommand($id, 'getDeviceStatus', '[]');"
+    },
+    {
+      "type": "Button",
+      "caption": "Ali Test getDeviceData",
+      "onClick": "MOVA_TestAliCommand($id, 'getDeviceData', '[]');"
+    },
+    {
+      "type": "Button",
+      "caption": "Ali Test get_props",
+      "onClick": "MOVA_TestAliCommand($id, 'get_props', '[\"2.1\",\"3.1\",\"4.2\",\"4.3\",\"4.4\"]');"
+    }
+  ]
+},
     {
       "type": "ExpansionPanel",
-      "caption": "Update",
+      "caption": "Aktualisierung",
       "items": [
         {
           "type": "NumberSpinner",
           "name": "UpdateInterval",
-          "caption": "Intervall (Sekunden)",
-          "minimum": 10
+          "caption": "Aktualisierungsintervall (Sekunden)",
+          "minimum": 0
         },
         {
           "type": "CheckBox",
           "name": "Debug",
-          "caption": "Debug aktivieren"
+          "caption": "Debug in IPS_LogMessage"
         }
       ]
     },
-
     {
       "type": "ExpansionPanel",
-      "caption": "Tests",
+      "caption": "Erweitert",
       "items": [
         {
-          "type": "Button",
-          "caption": "Cloud Status Test",
-          "onClick": "MOVA_TestCloudStatus($id);"
+          "type": "ValidationTextBox",
+          "name": "BaseUrl",
+          "caption": "Basis-URL ueberschreiben (leer = automatisch)"
         },
         {
-          "type": "Button",
-          "caption": "Status aktualisieren",
-          "onClick": "MOVA_Update($id);"
+          "type": "ValidationTextBox",
+          "name": "AuthBasic",
+          "caption": "Authorization Basic Token (optional)"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "TenantId",
+          "caption": "Tenant-ID"
         }
       ]
     }
   ],
-
   "actions": [
     {
       "type": "Button",
-      "caption": "Login + Update",
-      "onClick": "MOVA_Update($id);"
-    }
-  ],
-
-  "status": [
-    {
-      "code": 101,
-      "icon": "inactive",
-      "caption": "Instanz wird erstellt"
+      "caption": "Login + Geraete suchen",
+      "onClick": "MOVA_LoginAndDiscover($id);"
     },
     {
-      "code": 102,
-      "icon": "active",
-      "caption": "Aktiv"
+      "type": "Button",
+      "caption": "Status aktualisieren",
+      "onClick": "MOVA_Update($id);"
+    },
+    {
+      "type": "RowLayout",
+      "items": [
+        {
+          "type": "Button",
+          "caption": "Start",
+          "onClick": "MOVA_Start($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Pause",
+          "onClick": "MOVA_Pause($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Stop",
+          "onClick": "MOVA_Stop($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Zur Station",
+          "onClick": "MOVA_Dock($id);"
+        }
+      ]
+    },
+    {
+      "type": "RowLayout",
+      "items": [
+        {
+          "type": "Button",
+          "caption": "Roboter suchen",
+          "onClick": "MOVA_Locate($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Warnung loeschen",
+          "onClick": "MOVA_ClearWarning($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Auto-Entleerung",
+          "onClick": "MOVA_StartAutoEmpty($id);"
+        }
+      ]
+    }
+  ],
+  "status": [
+    {
+      "code": 104,
+      "icon": "inactive",
+      "caption": "Keine Zugangsdaten konfiguriert"
     },
     {
       "code": 201,
       "icon": "error",
-      "caption": "Fehler (siehe Debug)"
+      "caption": "Login/Cloud Fehler - Debug pruefen"
     }
   ]
 }
