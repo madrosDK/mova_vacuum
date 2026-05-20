@@ -1,0 +1,11 @@
+{
+  "id": "{2B9A14EA-66D7-4A84-A117-D2E838F1436C}",
+  "name": "MOVA Vacuum",
+  "type": 3,
+  "vendor": "MOVA",
+  "aliases": ["MOVA P50 Pro Ultra", "MOVA Vacuum"],
+  "parentRequirements": [],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "MOVA"
+}
