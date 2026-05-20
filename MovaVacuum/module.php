@@ -292,31 +292,27 @@ class MovaVacuum extends IPSModule
     public function Update()
     {
         try {
+
+            // 🔹 Properties (falls vorhanden)
             $props = $this->DefaultPropertyRequests();
             $result = $this->GetProperties($props);
-            $items = $this->ExtractResultItems($result);
-            if ($items !== []) {
-                $this->ParseProperties($result);
-            }
+            $this->ParseProperties($result);
 
-            // 🔥 IMMER zusätzlich Device Status holen!
+            // 🔥 IMMER Device List als Hauptquelle
             $device = $this->GetSelectedDeviceFromCloud();
+
             if ($device !== null) {
                 $this->ParseDeviceListStatus($device);
             }
 
-            $device = $this->GetSelectedDeviceFromCloud();
-            if ($device !== null) {
-                $this->ParseDeviceListStatus($device);
-                $this->SetValueSafe('LastResponse', $this->Encode([
-                    'properties' => $result,
-                    'device' => $device,
-                ]));
-                return true;
-            }
+            // Debug zusammenführen
+            $this->SetValueSafe('LastResponse', $this->Encode([
+                'properties' => $result,
+                'device' => $device
+            ]));
 
-            $this->SetValueSafe('LastResponse', $this->Encode($result));
             return true;
+
         } catch (Exception $e) {
             $this->HandleException('Status aktualisieren', $e);
             return false;
