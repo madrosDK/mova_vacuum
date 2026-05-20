@@ -86,7 +86,7 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyBoolean('UseMD5Password', false);
         $this->RegisterPropertyBoolean('Debug', true);
         $this->RegisterPropertyString('BaseUrl', '');
-        $this->RegisterPropertyString('AuthBasic', 'ZHJlYW1lX2FwcHYxOkFQXmR2QHpAU1FZVnhOODg=');
+        $this->RegisterPropertyString('AuthBasic', '');
         $this->RegisterPropertyString('TenantId', '000002');
         $this->RegisterPropertyString('Model', 'mova.vacuum.r2587a');
 
@@ -140,7 +140,7 @@ class MovaVacuum extends IPSModule
         $this->EnableAction('CleaningMode');
 
         if ($this->ReadPropertyString('Username') === '' || $this->ReadPropertyString('Password') === '') {
-            $this->SetStatus(101);
+            $this->SetStatus(104);
         } else {
             $this->SetStatus(IS_ACTIVE);
         }
@@ -339,7 +339,7 @@ class MovaVacuum extends IPSModule
 
         $response = $this->HttpRequest($this->BaseUrl() . '/dreame-auth/oauth/token', $data, true, false);
         if (!is_array($response) || (!isset($response['access_token']) && !isset($response['data']['access_token']))) {
-            $this->SetStatus(102);
+            $this->SetStatus(201);
             throw new Exception('MOVAhome Login fehlgeschlagen: ' . $this->Encode($response));
         }
 
