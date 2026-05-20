@@ -321,22 +321,22 @@ class MovaVacuum extends IPSModule
 
     public function Start()
     {
-        return $this->SendAction(2, 1, []);
+        return $this->SendSimpleCommand('start');
     }
 
     public function Pause()
     {
-        return $this->SendAction(2, 2, []);
+        return $this->SendSimpleCommand('pause');
     }
 
     public function Dock()
     {
-        return $this->SendAction(3, 1, []);
+        return $this->SendSimpleCommand('charge');
     }
 
     public function Stop()
     {
-        return $this->SendAction(4, 2, []);
+        return $this->SendSimpleCommand('stop');
     }
 
     public function Locate()
