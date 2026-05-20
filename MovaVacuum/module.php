@@ -644,6 +644,10 @@ class MovaVacuum extends IPSModule
             CURLOPT_TIMEOUT => 20,
             CURLOPT_POSTFIELDS => $data ?? '',
             CURLOPT_ENCODING => '',
+
+            // 🔥 FIX für MOVA IoT
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
         ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
