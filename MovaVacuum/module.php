@@ -321,7 +321,7 @@ class MovaVacuum extends IPSModule
 
     public function Start()
     {
-        return $this->SendSimpleCommand('start');
+        return $this->SendRpc('getDeviceStatus', []);
     }
 
     public function Pause()
@@ -435,7 +435,6 @@ class MovaVacuum extends IPSModule
 
     public function SendRpc(string $method, $params)
     {
-        throw new Exception('IoT aktuell deaktiviert');
         $this->Login(false);
         $did = $this->GetDeviceID();
         if ($did === '') {
@@ -455,9 +454,10 @@ class MovaVacuum extends IPSModule
             ],
         ];
 
-        return $this->ApiCall(
-            $this->CommandPath(),
-            $payload,
+        return $this->HttpRequest(
+            $this->CommandUrl(),
+            json_encode($payload),
+            true,
             true
         );
     }
@@ -646,6 +646,12 @@ class MovaVacuum extends IPSModule
             CURLOPT_TIMEOUT => 20,
             CURLOPT_POSTFIELDS => $data ?? '',
             CURLOPT_ENCODING => '',
+
+            // 🔥 FASTCOMMAND FIX (entscheidend)
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
