@@ -637,8 +637,6 @@ class MovaVacuum extends IPSModule
         $this->Log('HTTP POST ' . $url . ' DATA=' . $this->MaskPayloadForLog($data));
 
         $ch = curl_init($url);
-        $parsed = parse_url($url);
-        $isIoT = isset($parsed['port']) && $parsed['port'] == 19974;
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
@@ -646,10 +644,6 @@ class MovaVacuum extends IPSModule
             CURLOPT_TIMEOUT => 20,
             CURLOPT_POSTFIELDS => $data ?? '',
             CURLOPT_ENCODING => '',
-
-            // 🔥 FIX für MOVA IoT
-            CURLOPT_SSL_VERIFYPEER => !$isIoT,
-            CURLOPT_SSL_VERIFYHOST => $isIoT ? 0 : 2,
         ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
