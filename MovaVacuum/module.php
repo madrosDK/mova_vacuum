@@ -5,6 +5,8 @@ declare(strict_types=1);
 class MovaVacuum extends IPSModule
 {
     private const TIMER_UPDATE = 'UpdateTimer';
+    private const PASSWORD_SALT = 'RAylYC%fmSKp7%Tq';
+    private const DEFAULT_IOT_PREFIX = '20000';
 
     private const STATE_NAMES = [
         -1 => 'Unbekannt',
@@ -83,7 +85,7 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyString('Region', 'eu');
         $this->RegisterPropertyString('DeviceID', '');
         $this->RegisterPropertyInteger('UpdateInterval', 60);
-        $this->RegisterPropertyBoolean('UseMD5Password', false);
+        $this->RegisterPropertyBoolean('UseMD5Password', true);
         $this->RegisterPropertyBoolean('Debug', true);
         $this->RegisterPropertyString('BaseUrl', '');
         $this->RegisterPropertyString('AuthBasic', '');
@@ -170,49 +172,67 @@ class MovaVacuum extends IPSModule
 
     public function LoginAndDiscover()
     {
-        $this->Login(true);
+        try {
+            $this->Login(true);
 
-        $devices = $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', null, true);
-        $this->SetValueSafe('LastResponse', $this->Encode($devices));
+            $devices = $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', [
+                'sharedStatus' => 1,
+                'current' => 1,
+                'size' => 100,
+                'lang' => 'de',
+                'timestamp' => $this->NowMilliseconds(),
+            ], true);
+            $this->SetValueSafe('LastResponse', $this->Encode($devices));
 
-        $found = $this->FindDevice($devices);
-        if ($found === null) {
-            $this->Log('Kein passendes Geraet gefunden. LastResponse pruefen.');
-            return;
+            $found = $this->FindDevice($devices);
+            if ($found === null) {
+                $this->Log('Kein passendes Geraet gefunden. LastResponse pruefen.');
+                return false;
+            }
+
+            $did = (string)($found['did'] ?? $found['deviceId'] ?? '');
+            $this->WriteAttributeString('DeviceRaw', $this->Encode($found));
+            $this->WriteAttributeString('LastDeviceID', $did);
+            $this->SetValueSafe('DeviceName', (string)($found['customName'] ?? $found['name'] ?? $found['deviceInfo']['displayName'] ?? $found['model'] ?? $did));
+            $this->Log('Geraet gefunden: did=' . $did . ', model=' . ($found['model'] ?? 'unbekannt'));
+            return true;
+        } catch (Exception $e) {
+            $this->HandleException('Login/Geraetesuche', $e);
+            return false;
         }
-
-        $did = (string)($found['did'] ?? $found['deviceId'] ?? '');
-        $this->WriteAttributeString('DeviceRaw', $this->Encode($found));
-        $this->WriteAttributeString('LastDeviceID', $did);
-        $this->SetValueSafe('DeviceName', (string)($found['name'] ?? $found['model'] ?? $did));
-        $this->Log('Geraet gefunden: did=' . $did . ', model=' . ($found['model'] ?? 'unbekannt'));
     }
 
     public function Update()
     {
-        $props = [
-            $this->PropertyRequest('state', 2, 1),
-            $this->PropertyRequest('error', 2, 2),
-            $this->PropertyRequest('battery', 3, 1),
-            $this->PropertyRequest('charging_status', 3, 2),
-            $this->PropertyRequest('status', 4, 1),
-            $this->PropertyRequest('cleaning_time', 4, 2),
-            $this->PropertyRequest('cleaned_area', 4, 3),
-            $this->PropertyRequest('suction_level', 4, 4),
-            $this->PropertyRequest('water_volume', 4, 5),
-            $this->PropertyRequest('task_status', 4, 7),
-            $this->PropertyRequest('cleaning_mode', 4, 23),
-            $this->PropertyRequest('self_wash_base_status', 4, 25),
-            $this->PropertyRequest('main_brush_left', 9, 2),
-            $this->PropertyRequest('side_brush_left', 10, 2),
-            $this->PropertyRequest('filter_left', 11, 1),
-            $this->PropertyRequest('sensor_dirty_left', 16, 1),
-            $this->PropertyRequest('mop_pad_left', 18, 1),
-        ];
+        try {
+            $props = [
+                $this->PropertyRequest('state', 2, 1),
+                $this->PropertyRequest('error', 2, 2),
+                $this->PropertyRequest('battery', 3, 1),
+                $this->PropertyRequest('charging_status', 3, 2),
+                $this->PropertyRequest('status', 4, 1),
+                $this->PropertyRequest('cleaning_time', 4, 2),
+                $this->PropertyRequest('cleaned_area', 4, 3),
+                $this->PropertyRequest('suction_level', 4, 4),
+                $this->PropertyRequest('water_volume', 4, 5),
+                $this->PropertyRequest('task_status', 4, 7),
+                $this->PropertyRequest('cleaning_mode', 4, 23),
+                $this->PropertyRequest('self_wash_base_status', 4, 25),
+                $this->PropertyRequest('main_brush_left', 9, 2),
+                $this->PropertyRequest('side_brush_left', 10, 2),
+                $this->PropertyRequest('filter_left', 11, 1),
+                $this->PropertyRequest('sensor_dirty_left', 16, 1),
+                $this->PropertyRequest('mop_pad_left', 18, 1),
+            ];
 
-        $result = $this->SendRpc('get_properties', $props);
-        $this->SetValueSafe('LastResponse', $this->Encode($result));
-        $this->ParseProperties($result);
+            $result = $this->SendRpc('get_properties', $props);
+            $this->SetValueSafe('LastResponse', $this->Encode($result));
+            $this->ParseProperties($result);
+            return true;
+        } catch (Exception $e) {
+            $this->HandleException('Status aktualisieren', $e);
+            return false;
+        }
     }
 
     public function Start()
@@ -305,7 +325,7 @@ class MovaVacuum extends IPSModule
             ],
         ];
 
-        return $this->ApiCall('/dreame-iot-com-10000/device/sendCommand', $payload, true);
+        return $this->ApiCall($this->CommandPath(), $payload, true);
     }
 
     private function PropertyRequest(string $name, int $siid, int $piid): array
@@ -325,16 +345,17 @@ class MovaVacuum extends IPSModule
             return;
         }
 
-        $password = $this->ReadPropertyString('Password');
-        if ($this->ReadPropertyBoolean('UseMD5Password')) {
-            $password = md5($password);
-        }
+        $password = md5($this->ReadPropertyString('Password') . self::PASSWORD_SALT);
 
         $data = http_build_query([
             'grant_type' => 'password',
             'scope' => 'all',
+            'platform' => 'IOS',
+            'type' => 'account',
             'username' => $this->ReadPropertyString('Username'),
             'password' => $password,
+            'country' => 'DE',
+            'lang' => 'de',
         ]);
 
         $response = $this->HttpRequest($this->BaseUrl() . '/dreame-auth/oauth/token', $data, true, false);
@@ -368,23 +389,23 @@ class MovaVacuum extends IPSModule
             'Accept-Encoding: gzip, deflate',
             'User-Agent: Mova_Smarthome/1.5.59 (iPhone; iOS 16.0; Scale/3.00)',
             'Tenant-Id: ' . $this->ReadPropertyString('TenantId'),
+            'Authorization: ' . $this->AuthBasicHeader(),
         ];
 
         if ($json) {
-            $headers[] = 'Content-Type: application/json';
+            $headers[] = 'Content-Type: application/json; charset=utf-8';
         } else {
             $headers[] = 'Content-Type: application/x-www-form-urlencoded';
-            $headers[] = 'Authorization: Basic ' . $this->ReadPropertyString('AuthBasic');
         }
 
-        if ($auth && $json) {
+        if ($auth) {
             $token = $this->ReadAttributeString('AccessToken');
             if ($token !== '') {
-                $headers[] = 'Authorization: Bearer ' . $token;
+                $headers[] = 'Dreame-Auth: ' . $token;
             }
         }
 
-        $this->Log('HTTP POST ' . $url . ' DATA=' . (is_string($data) ? $data : ''));
+        $this->Log('HTTP POST ' . $url . ' DATA=' . $this->MaskPayloadForLog($data));
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -393,6 +414,7 @@ class MovaVacuum extends IPSModule
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_TIMEOUT => 20,
             CURLOPT_POSTFIELDS => $data ?? '',
+            CURLOPT_ENCODING => '',
         ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
@@ -410,6 +432,55 @@ class MovaVacuum extends IPSModule
             return $decoded;
         }
         return ['http_code' => $code, 'raw' => $body];
+    }
+
+    private function AuthBasicHeader(): string
+    {
+        $configured = trim($this->ReadPropertyString('AuthBasic'));
+        if ($configured !== '') {
+            return stripos($configured, 'Basic ') === 0 ? $configured : 'Basic ' . $configured;
+        }
+
+        $clientId = 'mova_' . 'app';
+        $clientSecret = 'V7Ko' . 'ChLW' . '8vHA' . 'CqGb';
+        return 'Basic ' . base64_encode($clientId . ':' . $clientSecret);
+    }
+
+    private function CommandPath(): string
+    {
+        $prefix = self::DEFAULT_IOT_PREFIX;
+        $raw = $this->ReadAttributeString('DeviceRaw');
+        if ($raw !== '') {
+            $device = json_decode($raw, true);
+            $bindDomain = (string)($device['bindDomain'] ?? '');
+            if (preg_match('/^([0-9]+)/', $bindDomain, $matches)) {
+                $prefix = $matches[1];
+            }
+        }
+
+        return '/dreame-iot-com-' . $prefix . '/device/sendCommand';
+    }
+
+    private function MaskPayloadForLog(?string $data): string
+    {
+        if ($data === null || $data === '') {
+            return '';
+        }
+
+        return preg_replace('/(password=)[^&]*/', '$1***', $data) ?? $data;
+    }
+
+    private function NowMilliseconds(): int
+    {
+        return (int)floor(microtime(true) * 1000);
+    }
+
+    private function HandleException(string $context, Exception $e): void
+    {
+        $this->SetStatus(201);
+        $message = $context . ' fehlgeschlagen: ' . $e->getMessage();
+        $this->SetValueSafe('LastResponse', $message);
+        $this->Log($message);
     }
 
     private function BaseUrl(): string

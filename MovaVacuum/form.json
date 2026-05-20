@@ -70,17 +70,12 @@
         {
           "type": "ValidationTextBox",
           "name": "AuthBasic",
-          "caption": "Authorization Basic Token"
+          "caption": "Authorization Basic Token (optional)"
         },
         {
           "type": "ValidationTextBox",
           "name": "TenantId",
           "caption": "Tenant-ID"
-        },
-        {
-          "type": "CheckBox",
-          "name": "UseMD5Password",
-          "caption": "Passwort als MD5 senden (Testoption)"
         }
       ]
     }

@@ -3,7 +3,7 @@
   "name": "MOVA Vacuum",
   "type": 3,
   "vendor": "MOVA",
-  "aliases": ["MOVA P50 Pro Ultra", "MOVA Vacuum"],
+  "aliases": [],
   "parentRequirements": [],
   "childRequirements": [],
   "implemented": [],
