@@ -9,43 +9,114 @@ class MovaVacuum extends IPSModule
     private const DEFAULT_IOT_PREFIX = '20000';
 
     private const STATE_NAMES = [
-        -1 => 'Unbekannt', 1 => 'Reinigt', 2 => 'Bereit', 3 => 'Pausiert', 4 => 'Fehler',
-        5 => 'Faehrt zur Station', 6 => 'Laedt', 7 => 'Wischt', 8 => 'Trocknet', 9 => 'Waescht',
-        10 => 'Faehrt zum Waschen', 11 => 'Kartierung', 12 => 'Saugt und wischt', 13 => 'Voll geladen',
-        14 => 'Update', 15 => 'Zum Reinigen gerufen', 16 => 'Selbstreparatur', 17 => 'Faehrt zum Mopp einsetzen',
-        18 => 'Faehrt zum Mopp entfernen', 19 => 'Wasserstation Selbsttest', 20 => 'Mopp wird gereinigt und Wasser aufgefuellt',
-        21 => 'Reinigung pausiert', 22 => 'Auto-Entleerung', 23 => 'Fernsteuerung', 24 => 'Intelligentes Laden',
-        25 => 'Zweite Reinigung', 26 => 'Folgt', 27 => 'Spot-Reinigung', 28 => 'Faehrt zur Staubentleerung',
-        29 => 'Wartet auf Aufgaben', 30 => 'Waschbrett wird gereinigt', 31 => 'Faehrt zum Entleeren',
-        32 => 'Entleert', 33 => 'Wasserversorgung/Entleerung', 34 => 'Entleerung', 35 => 'Staubbeutel trocknet',
-        36 => 'Staubbeutel-Trocknung pausiert', 37 => 'Faehrt zur Zusatzreinigung', 38 => 'Zusatzreinigung',
-        95 => 'Haustiersuche pausiert', 96 => 'Haustiersuche', 97 => 'Shortcut laeuft', 98 => 'Kameraueberwachung',
-        99 => 'Kameraueberwachung pausiert', 101 => 'Initiale Tiefenreinigung', 102 => 'Initiale Tiefenreinigung pausiert',
-        103 => 'Desinfiziert', 104 => 'Desinfiziert und trocknet', 105 => 'Moppwechsel', 106 => 'Moppwechsel pausiert',
-        107 => 'Bodenpflege', 108 => 'Bodenpflege pausiert',
+        -1 => 'Unbekannt',
+        1 => 'Reinigt',
+        2 => 'Bereit',
+        3 => 'Pausiert',
+        4 => 'Fehler',
+        5 => 'Faehrt zur Station',
+        6 => 'Laedt',
+        7 => 'Wischt',
+        8 => 'Trocknet',
+        9 => 'Waescht',
+        10 => 'Faehrt zum Waschen',
+        11 => 'Kartierung',
+        12 => 'Saugt und wischt',
+        13 => 'Voll geladen',
+        14 => 'Update',
+        15 => 'Zum Reinigen gerufen',
+        16 => 'Selbstreparatur',
+        17 => 'Faehrt zum Mopp einsetzen',
+        18 => 'Faehrt zum Mopp entfernen',
+        19 => 'Wasserstation Selbsttest',
+        20 => 'Mopp wird gereinigt und Wasser aufgefuellt',
+        21 => 'Reinigung pausiert',
+        22 => 'Auto-Entleerung',
+        23 => 'Fernsteuerung',
+        24 => 'Intelligentes Laden',
+        25 => 'Zweite Reinigung',
+        26 => 'Folgt',
+        27 => 'Spot-Reinigung',
+        28 => 'Faehrt zur Staubentleerung',
+        29 => 'Wartet auf Aufgaben',
+        30 => 'Waschbrett wird gereinigt',
+        31 => 'Faehrt zum Entleeren',
+        32 => 'Entleert',
+        33 => 'Wasserversorgung/Entleerung',
+        34 => 'Entleerung',
+        35 => 'Staubbeutel trocknet',
+        36 => 'Staubbeutel-Trocknung pausiert',
+        37 => 'Faehrt zur Zusatzreinigung',
+        38 => 'Zusatzreinigung',
+        95 => 'Haustiersuche pausiert',
+        96 => 'Haustiersuche',
+        97 => 'Shortcut laeuft',
+        98 => 'Kameraueberwachung',
+        99 => 'Kameraueberwachung pausiert',
+        101 => 'Initiale Tiefenreinigung',
+        102 => 'Initiale Tiefenreinigung pausiert',
+        103 => 'Desinfiziert',
+        104 => 'Desinfiziert und trocknet',
+        105 => 'Moppwechsel',
+        106 => 'Moppwechsel pausiert',
+        107 => 'Bodenpflege',
+        108 => 'Bodenpflege pausiert',
     ];
 
     private const TASK_NAMES = [
-        -1 => 'Unbekannt', 0 => 'Abgeschlossen', 1 => 'Auto-Reinigung', 2 => 'Zonenreinigung',
-        3 => 'Raumreinigung', 4 => 'Spot-Reinigung', 5 => 'Schnellkartierung', 6 => 'Auto-Reinigung pausiert',
-        7 => 'Zonenreinigung pausiert', 8 => 'Raumreinigung pausiert', 9 => 'Spot-Reinigung pausiert',
-        11 => 'Andocken pausiert', 12 => 'Wischen pausiert', 25 => 'Mopp einsetzen', 26 => 'Mopp entfernen',
+        -1 => 'Unbekannt',
+        0 => 'Abgeschlossen',
+        1 => 'Auto-Reinigung',
+        2 => 'Zonenreinigung',
+        3 => 'Raumreinigung',
+        4 => 'Spot-Reinigung',
+        5 => 'Schnellkartierung',
+        6 => 'Auto-Reinigung pausiert',
+        7 => 'Zonenreinigung pausiert',
+        8 => 'Raumreinigung pausiert',
+        9 => 'Spot-Reinigung pausiert',
+        11 => 'Andocken pausiert',
+        12 => 'Wischen pausiert',
+        25 => 'Mopp einsetzen',
+        26 => 'Mopp entfernen',
     ];
 
-    private const CHARGING_NAMES = [-1 => 'Unbekannt', 1 => 'Laedt', 2 => 'Laedt nicht', 3 => 'Voll geladen', 5 => 'Faehrt zur Station'];
+    private const CHARGING_NAMES = [
+        -1 => 'Unbekannt',
+        1 => 'Laedt',
+        2 => 'Laedt nicht',
+        3 => 'Voll geladen',
+        5 => 'Faehrt zur Station',
+    ];
 
     private const ERROR_NAMES = [
-        0 => 'Kein Fehler', 1 => 'Angehoben', 2 => 'Absturzsensor', 3 => 'Stossfaenger',
-        11 => 'Staubbehaelter voll', 12 => 'Hauptbuerste', 13 => 'Seitenbuerste', 14 => 'Luefter',
-        20 => 'Akku niedrig', 21 => 'Ladefehler', 47 => 'Blockiert', 48 => 'LDS Fehler',
-        51 => 'Filter blockiert', 56 => 'Laser Fehler', 68 => 'Mopp entfernen', 101 => 'Staubbehaelter voll',
-        105 => 'Wassertank', 106 => 'Schmutzwassertank', 111 => 'Mop-Pad', 116 => 'Frischwassertank',
+        0 => 'Kein Fehler',
+        1 => 'Angehoben',
+        2 => 'Absturzsensor',
+        3 => 'Stossfaenger',
+        11 => 'Staubbehaelter voll',
+        12 => 'Hauptbuerste',
+        13 => 'Seitenbuerste',
+        14 => 'Luefter',
+        20 => 'Akku niedrig',
+        21 => 'Ladefehler',
+        47 => 'Blockiert',
+        48 => 'LDS Fehler',
+        51 => 'Filter blockiert',
+        56 => 'Laser Fehler',
+        68 => 'Mopp entfernen',
+        101 => 'Staubbehaelter voll',
+        105 => 'Wassertank',
+        106 => 'Schmutzwassertank',
+        111 => 'Mop-Pad',
+        116 => 'Frischwassertank',
         118 => 'Schmutzwassertank-Fuellstand',
     ];
 
     public function Create()
     {
         parent::Create();
+
         $this->RegisterPropertyString('Username', '');
         $this->RegisterPropertyString('Password', '');
         $this->RegisterPropertyString('Region', 'eu');
@@ -56,13 +127,15 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyString('BaseUrl', '');
         $this->RegisterPropertyString('AuthBasic', '');
         $this->RegisterPropertyString('TenantId', '000002');
-        $this->RegisterPropertyString('Model', 'mova.vacuum.r2587a');
+        $this->RegisterPropertyString('Model', '');
+
         $this->RegisterAttributeString('AccessToken', '');
         $this->RegisterAttributeString('RefreshToken', '');
         $this->RegisterAttributeInteger('TokenExpires', 0);
         $this->RegisterAttributeString('DeviceRaw', '');
         $this->RegisterAttributeString('DiscoveredDevices', '[]');
         $this->RegisterAttributeString('LastDeviceID', '');
+
         $this->RegisterTimer(self::TIMER_UPDATE, 0, 'MOVA_Update($_IPS[\'TARGET\']);');
     }
 
@@ -72,36 +145,66 @@ class MovaVacuum extends IPSModule
         if (!is_array($form)) {
             return '{}';
         }
-        $this->InjectDeviceOptions($form['elements']);
+
+        if (isset($form['elements']) && is_array($form['elements'])) {
+            $this->InjectDeviceOptions($form['elements']);
+        }
+
         return json_encode($form, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     public function ApplyChanges()
     {
         parent::ApplyChanges();
-        $this->RegisterProfileIntegerEx('MOVA.SuctionLevel', '', '', '', [[0, 'Leise', '', -1], [1, 'Standard', '', -1], [2, 'Stark', '', -1], [3, 'Turbo', '', -1]]);
-        $this->RegisterProfileIntegerEx('MOVA.WaterVolume', '', '', '', [[1, 'Niedrig', '', -1], [2, 'Mittel', '', -1], [3, 'Hoch', '', -1]]);
-        $this->RegisterProfileIntegerEx('MOVA.CleaningMode', '', '', '', [[0, 'Saugen', '', -1], [1, 'Wischen', '', -1], [2, 'Saugen und Wischen', '', -1]]);
+
+        $this->RegisterProfileIntegerEx('MOVA.SuctionLevel', '', '', '', [
+            [0, 'Leise', '', -1],
+            [1, 'Standard', '', -1],
+            [2, 'Stark', '', -1],
+            [3, 'Turbo', '', -1],
+        ]);
+        $this->RegisterProfileIntegerEx('MOVA.WaterVolume', '', '', '', [
+            [1, 'Niedrig', '', -1],
+            [2, 'Mittel', '', -1],
+            [3, 'Hoch', '', -1],
+        ]);
+        $this->RegisterProfileIntegerEx('MOVA.CleaningMode', '', '', '', [
+            [0, 'Saugen', '', -1],
+            [1, 'Wischen', '', -1],
+            [2, 'Saugen und Wischen', '', -1],
+        ]);
 
         $this->RegisterVariableString('DeviceName', 'Geraet', '', 0);
-        $this->RegisterVariableString('StatusText', 'Status', '', 1);
-        $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 2);
-        $this->RegisterVariableInteger('StateCode', 'State-Code', '', 3);
-        $this->RegisterVariableInteger('ChargingStatus', 'Ladestatus-Code', '', 4);
-        $this->RegisterVariableInteger('ErrorCode', 'Fehler-Code', '', 5);
-        $this->RegisterVariableString('ErrorText', 'Fehler', '', 6);
-        $this->RegisterVariableInteger('TaskStatus', 'Task-Status-Code', '', 7);
-        $this->RegisterVariableInteger('CleanedArea', 'Gereinigte Flaeche', '', 8);
-        $this->RegisterVariableInteger('CleaningTime', 'Reinigungszeit', '', 9);
-        $this->RegisterVariableInteger('SuctionLevel', 'Saugleistung', 'MOVA.SuctionLevel', 10);
-        $this->RegisterVariableInteger('WaterVolume', 'Wasserstufe', 'MOVA.WaterVolume', 11);
-        $this->RegisterVariableInteger('CleaningMode', 'Reinigungsmodus', 'MOVA.CleaningMode', 12);
+        $this->RegisterVariableString('DeviceModel', 'Modell', '', 1);
+        $this->RegisterVariableString('Firmware', 'Firmware', '', 2);
+        $this->RegisterVariableString('SerialNumber', 'Seriennummer', '', 3);
+        $this->RegisterVariableBoolean('Online', 'Online', '~Switch', 4);
+        $this->RegisterVariableString('StatusText', 'Status', '', 5);
+        $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 6);
+        $this->RegisterVariableInteger('StateCode', 'State-Code', '', 7);
+        $this->RegisterVariableInteger('ChargingStatus', 'Ladestatus-Code', '', 8);
+        $this->RegisterVariableInteger('ErrorCode', 'Fehler-Code', '', 9);
+        $this->RegisterVariableString('ErrorText', 'Fehler', '', 10);
+        $this->RegisterVariableInteger('TaskStatus', 'Task-Status-Code', '', 11);
+        $this->RegisterVariableInteger('CleanedArea', 'Gereinigte Flaeche', '', 12);
+        $this->RegisterVariableInteger('CleaningTime', 'Reinigungszeit', '', 13);
+        $this->RegisterVariableInteger('SuctionLevel', 'Saugleistung', 'MOVA.SuctionLevel', 14);
+        $this->RegisterVariableInteger('WaterVolume', 'Wasserstufe', 'MOVA.WaterVolume', 15);
+        $this->RegisterVariableInteger('CleaningMode', 'Reinigungsmodus', 'MOVA.CleaningMode', 16);
         $this->RegisterVariableString('LastResponse', 'Letzte Antwort', '', 50);
+
         $this->EnableAction('SuctionLevel');
         $this->EnableAction('WaterVolume');
         $this->EnableAction('CleaningMode');
+
         $this->SyncSelectedDevice();
-        $this->SetStatus($this->ReadPropertyString('Username') === '' || $this->ReadPropertyString('Password') === '' ? 104 : IS_ACTIVE);
+
+        if ($this->ReadPropertyString('Username') === '' || $this->ReadPropertyString('Password') === '') {
+            $this->SetStatus(104);
+        } else {
+            $this->SetStatus(IS_ACTIVE);
+        }
+
         $interval = $this->ReadPropertyInteger('UpdateInterval');
         $this->SetTimerInterval(self::TIMER_UPDATE, $interval > 0 ? $interval * 1000 : 0);
     }
@@ -121,6 +224,7 @@ class MovaVacuum extends IPSModule
             default:
                 throw new Exception('Invalid ident: ' . $Ident);
         }
+
         $this->Update();
     }
 
@@ -128,22 +232,35 @@ class MovaVacuum extends IPSModule
     {
         try {
             $this->Login(true);
-            $devices = $this->FetchDeviceList();
+
+            $devices = $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', [
+                'sharedStatus' => 1,
+                'current' => 1,
+                'size' => 100,
+                'lang' => 'de',
+                'timestamp' => $this->NowMilliseconds(),
+            ], true);
             $this->SetValueSafe('LastResponse', $this->Encode($devices));
+
             $records = $this->FindDevices($devices);
             $this->WriteAttributeString('DiscoveredDevices', $this->Encode($records));
+
             $found = $this->FindDevice($records);
             if ($found === null) {
                 $this->Log('Kein passendes Geraet gefunden. LastResponse pruefen.');
                 return false;
             }
-            if ($this->ReadPropertyString('DeviceID') !== '' || count($records) === 1) {
+
+            $selected = $this->ReadPropertyString('DeviceID');
+            if ($selected !== '' || count($records) === 1) {
                 $this->UseDevice($found);
             }
+
             $this->UpdateFormField('DeviceID', 'options', json_encode($this->BuildDeviceOptions()));
             if (count($records) === 1) {
                 $this->UpdateFormField('DeviceID', 'value', (string)($found['did'] ?? $found['deviceId'] ?? ''));
             }
+
             $this->Log(count($records) . ' Geraet(e) gefunden. Auswahl im Feld "Gefundenes Geraet" pruefen und uebernehmen.');
             return true;
         } catch (Exception $e) {
@@ -156,28 +273,43 @@ class MovaVacuum extends IPSModule
     {
         try {
             $props = [
-                $this->PropertyRequest('state', 2, 1), $this->PropertyRequest('error', 2, 2),
-                $this->PropertyRequest('battery', 3, 1), $this->PropertyRequest('charging_status', 3, 2),
-                $this->PropertyRequest('status', 4, 1), $this->PropertyRequest('cleaning_time', 4, 2),
-                $this->PropertyRequest('cleaned_area', 4, 3), $this->PropertyRequest('suction_level', 4, 4),
-                $this->PropertyRequest('water_volume', 4, 5), $this->PropertyRequest('task_status', 4, 7),
-                $this->PropertyRequest('cleaning_mode', 4, 23), $this->PropertyRequest('self_wash_base_status', 4, 25),
-                $this->PropertyRequest('main_brush_left', 9, 2), $this->PropertyRequest('side_brush_left', 10, 2),
-                $this->PropertyRequest('filter_left', 11, 1), $this->PropertyRequest('sensor_dirty_left', 16, 1),
+                $this->PropertyRequest('state', 2, 1),
+                $this->PropertyRequest('error', 2, 2),
+                $this->PropertyRequest('battery', 3, 1),
+                $this->PropertyRequest('charging_status', 3, 2),
+                $this->PropertyRequest('status', 4, 1),
+                $this->PropertyRequest('cleaning_time', 4, 2),
+                $this->PropertyRequest('cleaned_area', 4, 3),
+                $this->PropertyRequest('suction_level', 4, 4),
+                $this->PropertyRequest('water_volume', 4, 5),
+                $this->PropertyRequest('task_status', 4, 7),
+                $this->PropertyRequest('cleaning_mode', 4, 23),
+                $this->PropertyRequest('self_wash_base_status', 4, 25),
+                $this->PropertyRequest('main_brush_left', 9, 2),
+                $this->PropertyRequest('side_brush_left', 10, 2),
+                $this->PropertyRequest('filter_left', 11, 1),
+                $this->PropertyRequest('sensor_dirty_left', 16, 1),
                 $this->PropertyRequest('mop_pad_left', 18, 1),
             ];
+
             $result = $this->GetProperties($props);
-            if ($this->ExtractResultItems($result) !== []) {
+            $items = $this->ExtractResultItems($result);
+            if ($items !== []) {
                 $this->SetValueSafe('LastResponse', $this->Encode($result));
                 $this->ParseProperties($result);
                 return true;
             }
+
             $device = $this->GetSelectedDeviceFromCloud();
             if ($device !== null) {
                 $this->ParseDeviceListStatus($device);
-                $this->SetValueSafe('LastResponse', $this->Encode(['properties' => $result, 'device' => $device]));
+                $this->SetValueSafe('LastResponse', $this->Encode([
+                    'properties' => $result,
+                    'device' => $device,
+                ]));
                 return true;
             }
+
             $this->SetValueSafe('LastResponse', $this->Encode($result));
             return true;
         } catch (Exception $e) {
@@ -186,13 +318,40 @@ class MovaVacuum extends IPSModule
         }
     }
 
-    public function Start() { return $this->SendAction(2, 1, []); }
-    public function Pause() { return $this->SendAction(2, 2, []); }
-    public function Dock() { return $this->SendAction(3, 1, []); }
-    public function Stop() { return $this->SendAction(4, 2, []); }
-    public function Locate() { return $this->SendAction(7, 1, []); }
-    public function ClearWarning() { return $this->SendAction(4, 3, []); }
-    public function StartAutoEmpty() { return $this->SendAction(15, 1, []); }
+    public function Start()
+    {
+        return $this->SendAction(2, 1, []);
+    }
+
+    public function Pause()
+    {
+        return $this->SendAction(2, 2, []);
+    }
+
+    public function Dock()
+    {
+        return $this->SendAction(3, 1, []);
+    }
+
+    public function Stop()
+    {
+        return $this->SendAction(4, 2, []);
+    }
+
+    public function Locate()
+    {
+        return $this->SendAction(7, 1, []);
+    }
+
+    public function ClearWarning()
+    {
+        return $this->SendAction(4, 3, []);
+    }
+
+    public function StartAutoEmpty()
+    {
+        return $this->SendAction(15, 1, []);
+    }
 
     public function RawRpc(string $method, string $jsonParams)
     {
@@ -207,14 +366,24 @@ class MovaVacuum extends IPSModule
 
     public function SendAction(int $siid, int $aiid, array $in = [])
     {
-        $result = $this->SendRpc('action', ['did' => $siid . '.' . $aiid, 'siid' => $siid, 'aiid' => $aiid, 'in' => $in]);
+        $result = $this->SendRpc('action', [
+            'did' => $siid . '.' . $aiid,
+            'siid' => $siid,
+            'aiid' => $aiid,
+            'in' => $in,
+        ]);
         $this->SetValueSafe('LastResponse', $this->Encode($result));
         return $result;
     }
 
     public function SetProperty(int $siid, int $piid, $value)
     {
-        $result = $this->SendRpc('set_properties', [['did' => $siid . '.' . $piid, 'siid' => $siid, 'piid' => $piid, 'value' => $value]]);
+        $result = $this->SendRpc('set_properties', [[
+            'did' => $siid . '.' . $piid,
+            'siid' => $siid,
+            'piid' => $piid,
+            'value' => $value,
+        ]]);
         $this->SetValueSafe('LastResponse', $this->Encode($result));
         return $result;
     }
@@ -226,8 +395,20 @@ class MovaVacuum extends IPSModule
         if ($did === '') {
             throw new Exception('Keine Device-ID vorhanden. Bitte zuerst "Login + Geraete suchen" ausfuehren oder Device-ID eintragen.');
         }
+
         $id = time();
-        $payload = ['did' => $did, 'id' => $id, 'data' => ['did' => $did, 'id' => $id, 'method' => $method, 'params' => $this->NormalizeRpcParams($params, $did)]];
+        $payload = [
+            'did' => $did,
+            'id' => $id,
+            'data' => [
+                'did' => $did,
+                'id' => $id,
+                'method' => $method,
+                'params' => $params,
+            ],
+        ];
+
+        $payload['data']['params'] = $this->NormalizeRpcParams($params, $did);
         return $this->ApiCall($this->CommandPath(), $payload, true);
     }
 
@@ -238,37 +419,47 @@ class MovaVacuum extends IPSModule
         if ($did === '') {
             throw new Exception('Keine Device-ID vorhanden. Bitte zuerst "Login + Geraete suchen" ausfuehren oder Device-ID eintragen.');
         }
+
         $model = [];
         foreach ($props as $prop) {
-            $model[] = ['siid' => (int)($prop['siid'] ?? 0), 'piid' => (int)($prop['piid'] ?? 0)];
+            $model[] = [
+                'siid' => (int)($prop['siid'] ?? 0),
+                'piid' => (int)($prop['piid'] ?? 0),
+            ];
         }
-        return $this->ApiCall('/dreame-user-iot/iotuserdata/getDeviceData', ['did' => $did, 'model' => $model], true);
+
+        return $this->ApiCall('/dreame-user-iot/iotuserdata/getDeviceData', [
+            'did' => $did,
+            'model' => $model,
+        ], true);
     }
 
     public function GetSelectedDeviceFromCloud(): ?array
     {
-        $devices = $this->FetchDeviceList();
-        $records = $this->FindDevices($devices);
-        if ($records !== []) {
-            $this->WriteAttributeString('DiscoveredDevices', $this->Encode($records));
-        }
-        return $this->FindDevice($records);
-    }
-
-    private function FetchDeviceList()
-    {
-        return $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', [
+        $devices = $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', [
             'sharedStatus' => 1,
             'current' => 1,
             'size' => 100,
             'lang' => 'de',
             'timestamp' => $this->NowMilliseconds(),
         ], true);
+
+        $records = $this->FindDevices($devices);
+        if ($records !== []) {
+            $this->WriteAttributeString('DiscoveredDevices', $this->Encode($records));
+        }
+
+        return $this->FindDevice($records);
     }
 
     private function PropertyRequest(string $name, int $siid, int $piid): array
     {
-        return ['did' => $siid . '.' . $piid, 'siid' => $siid, 'piid' => $piid, 'name' => $name];
+        return [
+            'did' => $siid . '.' . $piid,
+            'siid' => $siid,
+            'piid' => $piid,
+            'name' => $name,
+        ];
     }
 
     private function NormalizeRpcParams($params, string $did)
@@ -276,14 +467,17 @@ class MovaVacuum extends IPSModule
         if (!is_array($params)) {
             return $params;
         }
+
         if (isset($params['siid']) && (isset($params['piid']) || isset($params['aiid']))) {
             $params['did'] = $did;
         }
+
         foreach ($params as $key => $value) {
             if (is_array($value)) {
                 $params[$key] = $this->NormalizeRpcParams($value, $did);
             }
         }
+
         return $params;
     }
 
@@ -293,24 +487,30 @@ class MovaVacuum extends IPSModule
         if (!$force && $this->ReadAttributeString('AccessToken') !== '' && $expires > time() + 120) {
             return;
         }
+
+        $password = md5($this->ReadPropertyString('Password') . self::PASSWORD_SALT);
+
         $data = http_build_query([
             'grant_type' => 'password',
             'scope' => 'all',
             'platform' => 'IOS',
             'type' => 'account',
             'username' => $this->ReadPropertyString('Username'),
-            'password' => md5($this->ReadPropertyString('Password') . self::PASSWORD_SALT),
+            'password' => $password,
             'country' => 'DE',
             'lang' => 'de',
         ]);
+
         $response = $this->HttpRequest($this->BaseUrl() . '/dreame-auth/oauth/token', $data, true, false);
         if (!is_array($response) || (!isset($response['access_token']) && !isset($response['data']['access_token']))) {
             $this->SetStatus(201);
             throw new Exception('MOVAhome Login fehlgeschlagen: ' . $this->Encode($response));
         }
+
         $token = $response['access_token'] ?? $response['data']['access_token'];
         $refresh = $response['refresh_token'] ?? ($response['data']['refresh_token'] ?? '');
         $expiresIn = (int)($response['expires_in'] ?? ($response['data']['expires_in'] ?? 3600));
+
         $this->WriteAttributeString('AccessToken', (string)$token);
         $this->WriteAttributeString('RefreshToken', (string)$refresh);
         $this->WriteAttributeInteger('TokenExpires', time() + $expiresIn);
@@ -334,23 +534,40 @@ class MovaVacuum extends IPSModule
             'Tenant-Id: ' . $this->ReadPropertyString('TenantId'),
             'Authorization: ' . $this->AuthBasicHeader(),
         ];
-        $headers[] = $json ? 'Content-Type: application/json; charset=utf-8' : 'Content-Type: application/x-www-form-urlencoded';
+
+        if ($json) {
+            $headers[] = 'Content-Type: application/json; charset=utf-8';
+        } else {
+            $headers[] = 'Content-Type: application/x-www-form-urlencoded';
+        }
+
         if ($auth) {
             $token = $this->ReadAttributeString('AccessToken');
             if ($token !== '') {
                 $headers[] = 'Dreame-Auth: ' . $token;
             }
         }
+
         $this->Log('HTTP POST ' . $url . ' DATA=' . $this->MaskPayloadForLog($data));
+
         $ch = curl_init($url);
-        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_POST => true, CURLOPT_HTTPHEADER => $headers, CURLOPT_TIMEOUT => 20, CURLOPT_POSTFIELDS => $data ?? '', CURLOPT_ENCODING => '']);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_TIMEOUT => 20,
+            CURLOPT_POSTFIELDS => $data ?? '',
+            CURLOPT_ENCODING => '',
+        ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
         $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+
         if ($body === false) {
             throw new Exception('HTTP Fehler: ' . $err);
         }
+
         $this->Log('HTTP ' . $code . ' RESPONSE=' . $body);
         $decoded = json_decode($body, true);
         if (is_array($decoded)) {
@@ -366,7 +583,10 @@ class MovaVacuum extends IPSModule
         if ($configured !== '') {
             return stripos($configured, 'Basic ') === 0 ? $configured : 'Basic ' . $configured;
         }
-        return 'Basic ' . base64_encode(('mova_' . 'app') . ':' . ('V7Ko' . 'ChLW' . '8vHA' . 'CqGb'));
+
+        $clientId = 'mova_' . 'app';
+        $clientSecret = 'V7Ko' . 'ChLW' . '8vHA' . 'CqGb';
+        return 'Basic ' . base64_encode($clientId . ':' . $clientSecret);
     }
 
     private function CommandPath(): string
@@ -380,6 +600,7 @@ class MovaVacuum extends IPSModule
                 $prefix = $matches[1];
             }
         }
+
         return '/dreame-iot-com-' . $prefix . '/device/sendCommand';
     }
 
@@ -388,6 +609,7 @@ class MovaVacuum extends IPSModule
         if ($data === null || $data === '') {
             return '';
         }
+
         return preg_replace('/(password=)[^&]*/', '$1***', $data) ?? $data;
     }
 
@@ -407,7 +629,10 @@ class MovaVacuum extends IPSModule
     private function BaseUrl(): string
     {
         $custom = trim($this->ReadPropertyString('BaseUrl'));
-        return $custom !== '' ? rtrim($custom, '/') : 'https://' . $this->ReadPropertyString('Region') . '.iot.mova-tech.com:13267';
+        if ($custom !== '') {
+            return rtrim($custom, '/');
+        }
+        return 'https://' . $this->ReadPropertyString('Region') . '.iot.mova-tech.com:13267';
     }
 
     private function GetDeviceID(): string
@@ -416,10 +641,12 @@ class MovaVacuum extends IPSModule
         if ($did !== '') {
             return $did;
         }
+
         $last = $this->ReadAttributeString('LastDeviceID');
         if ($last !== '') {
             return $last;
         }
+
         $raw = $this->ReadAttributeString('DeviceRaw');
         if ($raw !== '') {
             $data = json_decode($raw, true);
@@ -433,13 +660,20 @@ class MovaVacuum extends IPSModule
         $selected = $this->ReadPropertyString('DeviceID');
         $model = $this->ReadPropertyString('Model');
         $records = $this->FindDevices($response);
-        foreach ($records as $item) {
-            $did = (string)($item['did'] ?? $item['deviceId'] ?? '');
-            if ($selected !== '' && $did === $selected) {
-                return $item;
+
+        if ($selected !== '') {
+            foreach ($records as $item) {
+                $did = (string)($item['did'] ?? $item['deviceId'] ?? '');
+                if ($did === $selected) {
+                    return $item;
+                }
             }
         }
+
         foreach ($records as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
             $itemModel = (string)($item['model'] ?? '');
             if (($model !== '' && $itemModel === $model) || strpos($itemModel, '.vacuum.') !== false) {
                 return $item;
@@ -452,14 +686,21 @@ class MovaVacuum extends IPSModule
     {
         $records = [];
         $seen = [];
+
         foreach ($this->Flatten($response) as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
             $did = (string)($item['did'] ?? $item['deviceId'] ?? '');
             if ($did === '' || isset($seen[$did])) {
                 continue;
             }
+
             $seen[$did] = true;
             $records[] = $item;
         }
+
         return $records;
     }
 
@@ -469,6 +710,7 @@ class MovaVacuum extends IPSModule
         if ($did === '') {
             return;
         }
+
         $this->WriteAttributeString('DeviceRaw', $this->Encode($device));
         $this->WriteAttributeString('LastDeviceID', $did);
         $this->SetValueSafe('DeviceName', $this->DeviceCaption($device));
@@ -481,6 +723,7 @@ class MovaVacuum extends IPSModule
         if ($selected === '') {
             return;
         }
+
         foreach ($this->GetDiscoveredDevices() as $device) {
             $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
             if ($did === $selected) {
@@ -488,6 +731,7 @@ class MovaVacuum extends IPSModule
                 return;
             }
         }
+
         $this->WriteAttributeString('LastDeviceID', $selected);
     }
 
@@ -506,6 +750,7 @@ class MovaVacuum extends IPSModule
                 $element['options'] = $this->BuildDeviceOptions();
                 continue;
             }
+
             if (isset($element['items']) && is_array($element['items'])) {
                 $this->InjectDeviceOptions($element['items']);
             }
@@ -514,7 +759,13 @@ class MovaVacuum extends IPSModule
 
     private function BuildDeviceOptions(): array
     {
-        $options = [['caption' => 'Bitte Geraet suchen und auswaehlen', 'value' => '']];
+        $options = [
+            [
+                'caption' => 'Bitte Geraet suchen und auswaehlen',
+                'value' => '',
+            ],
+        ];
+
         $current = $this->ReadPropertyString('DeviceID');
         $hasCurrent = $current === '';
         foreach ($this->GetDiscoveredDevices() as $device) {
@@ -522,12 +773,21 @@ class MovaVacuum extends IPSModule
             if ($did === '') {
                 continue;
             }
+
             $hasCurrent = $hasCurrent || $did === $current;
-            $options[] = ['caption' => $this->DeviceCaption($device) . ' - ' . $did, 'value' => $did];
+            $options[] = [
+                'caption' => $this->DeviceCaption($device) . ' - ' . $did,
+                'value' => $did,
+            ];
         }
+
         if (!$hasCurrent) {
-            $options[] = ['caption' => 'Aktuell eingetragen - ' . $current, 'value' => $current];
+            $options[] = [
+                'caption' => 'Aktuell eingetragen - ' . $current,
+                'value' => $current,
+            ];
         }
+
         return $options;
     }
 
@@ -536,10 +796,17 @@ class MovaVacuum extends IPSModule
         $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
         $model = (string)($device['model'] ?? '');
         $name = (string)($device['customName'] ?? $device['name'] ?? $device['deviceInfo']['displayName'] ?? '');
+
         if ($name !== '' && $model !== '') {
             return $name . ' (' . $model . ')';
         }
-        return $name !== '' ? $name : ($model !== '' ? $model : ($did !== '' ? $did : 'Unbekanntes Geraet'));
+        if ($name !== '') {
+            return $name;
+        }
+        if ($model !== '') {
+            return $model;
+        }
+        return $did !== '' ? $did : 'Unbekanntes Geraet';
     }
 
     private function Flatten($value): array
@@ -562,14 +829,17 @@ class MovaVacuum extends IPSModule
     {
         $items = $this->ExtractResultItems($result);
         $statusParts = [];
+
         foreach ($items as $item) {
             if (!is_array($item) || !array_key_exists('value', $item)) {
                 continue;
             }
+
             $siid = (int)($item['siid'] ?? 0);
             $piid = (int)($item['piid'] ?? 0);
             $did = (string)($item['did'] ?? ($siid . '.' . $piid));
             $value = $item['value'];
+
             if ($did === '2.1') {
                 $this->SetValueSafe('StateCode', (int)$value);
                 $statusParts[] = self::STATE_NAMES[(int)$value] ?? ('State ' . $value);
@@ -596,6 +866,7 @@ class MovaVacuum extends IPSModule
                 $this->SetValueSafe('CleaningMode', (int)$value);
             }
         }
+
         if ($statusParts !== []) {
             $this->SetValueSafe('StatusText', implode(' / ', array_unique($statusParts)));
         }
@@ -604,9 +875,19 @@ class MovaVacuum extends IPSModule
     private function ParseDeviceListStatus(array $device): void
     {
         $this->UseDevice($device);
+
+        $this->SetValueSafe('DeviceModel', (string)($device['model'] ?? $device['deviceInfo']['model'] ?? ''));
+        $this->SetValueSafe('Firmware', (string)($device['ver'] ?? ''));
+        $this->SetValueSafe('SerialNumber', (string)($device['sn'] ?? ''));
+
+        if (array_key_exists('online', $device)) {
+            $this->SetValueSafe('Online', (bool)$device['online']);
+        }
+
         if (array_key_exists('battery', $device)) {
             $this->SetValueSafe('Battery', (int)$device['battery']);
         }
+
         if (array_key_exists('latestStatus', $device)) {
             $state = (int)$device['latestStatus'];
             $this->SetValueSafe('StateCode', $state);
@@ -614,11 +895,17 @@ class MovaVacuum extends IPSModule
         } elseif (array_key_exists('online', $device)) {
             $this->SetValueSafe('StatusText', $device['online'] ? 'Online' : 'Offline');
         }
+
         if (array_key_exists('online', $device) && !$device['online']) {
             $this->SetValueSafe('ErrorText', 'Offline');
-        } else {
+        } elseif ($this->GetIDForIdentSafe('ErrorText') !== false) {
             $this->SetValueSafe('ErrorText', 'Kein Fehler');
         }
+    }
+
+    private function GetIDForIdentSafe(string $ident)
+    {
+        return @$this->GetIDForIdent($ident);
     }
 
     private function ExtractResultItems($result): array
@@ -626,12 +913,21 @@ class MovaVacuum extends IPSModule
         if (!is_array($result)) {
             return [];
         }
-        $candidates = [$result['data']['result'] ?? null, $result['data']['data']['result'] ?? null, $result['result'] ?? null, $result['data'] ?? null, $result];
+
+        $candidates = [
+            $result['data']['result'] ?? null,
+            $result['data']['data']['result'] ?? null,
+            $result['result'] ?? null,
+            $result['data'] ?? null,
+            $result,
+        ];
+
         foreach ($candidates as $candidate) {
             if (is_array($candidate) && $this->IsList($candidate)) {
                 return $candidate;
             }
         }
+
         return [];
     }
 
@@ -652,6 +948,7 @@ class MovaVacuum extends IPSModule
         if (!IPS_VariableProfileExists($name)) {
             IPS_CreateVariableProfile($name, VARIABLETYPE_INTEGER);
         }
+
         IPS_SetVariableProfileIcon($name, $icon);
         IPS_SetVariableProfileText($name, $prefix, $suffix);
         foreach ($associations as $association) {
