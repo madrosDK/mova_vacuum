@@ -454,7 +454,12 @@ class MovaVacuum extends IPSModule
             ],
         ];
 
-        return $this->ApiCall($this->CommandPath(), $payload, true);
+        return $this->HttpRequest(
+            $this->CommandUrl(),
+            json_encode($payload),
+            true,
+            true
+        );
     }
 
     public function GetProperties(array $props)
@@ -683,6 +688,23 @@ class MovaVacuum extends IPSModule
         }
 
         return '/dreame-iot-com-' . $prefix . '/device/sendCommand';
+    }
+
+    private function CommandUrl(): string
+    {
+        $raw = $this->ReadAttributeString('DeviceRaw');
+
+        if ($raw !== '') {
+            $device = json_decode($raw, true);
+            $bind = $device['bindDomain'] ?? '';
+
+            if ($bind !== '') {
+                return 'https://' . $bind . '/device/sendCommand';
+            }
+        }
+
+        // Fallback (alter Weg)
+        return $this->BaseUrl() . '/dreame-iot-com-20000/device/sendCommand';
     }
 
     private function MaskPayloadForLog(?string $data): string
