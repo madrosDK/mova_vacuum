@@ -1216,4 +1216,24 @@ class MovaVacuum extends IPSModule
         // Test 3 (WICHTIG)
         $this->TestAliCommand('getAllStatus', '[]');
     }
+
+    public function SendSimpleCommand(string $cmd)
+    {
+        try {
+            $did = $this->GetDeviceID();
+
+            $result = $this->ApiCall('/dreame-user-iot/iotdevice/action', [
+                'did' => $did,
+                'cmd' => $cmd
+            ], true);
+
+            $this->SetValueSafe('LastResponse', $this->Encode($result));
+            return $result;
+
+        } catch (Exception $e) {
+            $this->HandleException('Command', $e);
+            return false;
+        }
+    }
+
 }
