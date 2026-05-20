@@ -251,7 +251,7 @@ class MovaVacuum extends IPSModule
                 $this->PropertyRequest('mop_pad_left', 18, 1),
             ];
 
-            $result = $this->SendRpc('get_properties', $props);
+            $result = $this->GetProperties($props);
             $this->SetValueSafe('LastResponse', $this->Encode($result));
             $this->ParseProperties($result);
             return true;
@@ -353,6 +353,28 @@ class MovaVacuum extends IPSModule
 
         $payload['data']['params'] = $this->NormalizeRpcParams($params, $did);
         return $this->ApiCall($this->CommandPath(), $payload, true);
+    }
+
+    public function GetProperties(array $props)
+    {
+        $this->Login(false);
+        $did = $this->GetDeviceID();
+        if ($did === '') {
+            throw new Exception('Keine Device-ID vorhanden. Bitte zuerst "Login + Geraete suchen" ausfuehren oder Device-ID eintragen.');
+        }
+
+        $model = [];
+        foreach ($props as $prop) {
+            $model[] = [
+                'siid' => (int)($prop['siid'] ?? 0),
+                'piid' => (int)($prop['piid'] ?? 0),
+            ];
+        }
+
+        return $this->ApiCall('/dreame-user-iot/iotuserdata/getDeviceData', [
+            'did' => $did,
+            'model' => $model,
+        ], true);
     }
 
     private function PropertyRequest(string $name, int $siid, int $piid): array
