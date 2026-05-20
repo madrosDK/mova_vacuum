@@ -637,6 +637,7 @@ class MovaVacuum extends IPSModule
         $this->Log('HTTP POST ' . $url . ' DATA=' . $this->MaskPayloadForLog($data));
 
         $ch = curl_init($url);
+        $isIoT = strpos($url, 'mova-tech.com:19974') !== false;
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
