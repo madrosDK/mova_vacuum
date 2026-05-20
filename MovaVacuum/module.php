@@ -1211,12 +1211,12 @@ class MovaVacuum extends IPSModule
     public function RunAliTests()
     {
         // Test 1
-        $this->TestAliCommand('getDeviceStatus', '[]');
+        $this->TestAliCommand('getStatus', '[]');
 
         // Test 2
-        $this->TestAliCommand('getDeviceData', '[]');
+        $this->TestAliCommand('getDeviceState', '[]');
 
         // Test 3 (WICHTIG)
-        $this->TestAliCommand('get_props', '["2.1","3.1","4.2","4.3","4.4","4.5"]');
+        $this->TestAliCommand('getAllStatus', '[]');
     }
 }
