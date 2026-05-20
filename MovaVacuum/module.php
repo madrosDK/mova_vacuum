@@ -646,8 +646,8 @@ class MovaVacuum extends IPSModule
             CURLOPT_ENCODING => '',
 
             // 🔥 FIX für MOVA IoT
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSL_VERIFYPEER => !$isIoT,
+            CURLOPT_SSL_VERIFYHOST => $isIoT ? 0 : 2,
         ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
