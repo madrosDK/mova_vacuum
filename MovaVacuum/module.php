@@ -454,10 +454,9 @@ class MovaVacuum extends IPSModule
             ],
         ];
 
-        return $this->HttpRequest(
-            $this->CommandUrl(),
-            json_encode($payload),
-            true,
+        return $this->ApiCall(
+            $this->CommandPath(),
+            $payload,
             true
         );
     }
@@ -522,6 +521,8 @@ class MovaVacuum extends IPSModule
             $this->PropertyRequest('filter_left', 11, 1),
             $this->PropertyRequest('sensor_dirty_left', 16, 1),
             $this->PropertyRequest('mop_pad_left', 18, 1),
+            $this->PropertyRequest('resume_clean', 4, 26),
+            $this->PropertyRequest('clean_percent', 4, 27),
         ];
     }
 
