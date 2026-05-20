@@ -321,14 +321,7 @@ class MovaVacuum extends IPSModule
 
     public function Start()
     {
-        return $this->SendRpc('get_props', [
-            ["did"=>"2.1","siid"=>2,"piid"=>1],
-            ["did"=>"3.1","siid"=>3,"piid"=>1],
-            ["did"=>"4.2","siid"=>4,"piid"=>2],
-            ["did"=>"4.3","siid"=>4,"piid"=>3],
-            ["did"=>"4.4","siid"=>4,"piid"=>4],
-            ["did"=>"4.5","siid"=>4,"piid"=>5]
-        ]);
+        return $this->SendRpc('getDeviceData', []);
     }
 
     public function Pause()
