@@ -215,6 +215,11 @@ class MovaVacuum extends IPSModule
                 $this->UseDevice($found);
             }
 
+            $this->UpdateFormField('DeviceID', 'options', json_encode($this->BuildDeviceOptions()));
+            if (count($records) === 1) {
+                $this->UpdateFormField('DeviceID', 'value', (string)($found['did'] ?? $found['deviceId'] ?? ''));
+            }
+
             $this->Log(count($records) . ' Geraet(e) gefunden. Auswahl im Feld "Gefundenes Geraet" pruefen und uebernehmen.');
             return true;
         } catch (Exception $e) {
@@ -346,6 +351,7 @@ class MovaVacuum extends IPSModule
             ],
         ];
 
+        $payload['data']['params'] = $this->NormalizeRpcParams($params, $did);
         return $this->ApiCall($this->CommandPath(), $payload, true);
     }
 
@@ -357,6 +363,25 @@ class MovaVacuum extends IPSModule
             'piid' => $piid,
             'name' => $name,
         ];
+    }
+
+    private function NormalizeRpcParams($params, string $did)
+    {
+        if (!is_array($params)) {
+            return $params;
+        }
+
+        if (isset($params['siid']) && (isset($params['piid']) || isset($params['aiid']))) {
+            $params['did'] = $did;
+        }
+
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $params[$key] = $this->NormalizeRpcParams($value, $did);
+            }
+        }
+
+        return $params;
     }
 
     private function Login(bool $force): void
