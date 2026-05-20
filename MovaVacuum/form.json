@@ -144,12 +144,12 @@
   ],
   "status": [
     {
-      "code": 101,
+      "code": 104,
       "icon": "inactive",
       "caption": "Keine Zugangsdaten konfiguriert"
     },
     {
-      "code": 102,
+      "code": 201,
       "icon": "error",
       "caption": "Login/Cloud Fehler - Debug pruefen"
     }
