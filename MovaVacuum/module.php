@@ -1095,4 +1095,52 @@ class MovaVacuum extends IPSModule
         }
         $this->SendDebug('MOVA', $message, 0);
     }
+
+    public function TestFastCommand(string $method)
+    {
+        $did = $this->GetDeviceID();
+
+        $payload = [
+            'did' => $did,
+            'id' => time(),
+            'data' => [
+                'did' => $did,
+                'id' => time(),
+                'method' => $method,
+                'params' => []
+            ]
+        ];
+
+        $result = $this->ApiCall($this->CommandPath(), $payload, true);
+        $this->SetValueSafe('LastResponse', $this->Encode($result));
+        return $result;
+    }
+    public function TestFastProperties()
+    {
+        $did = $this->GetDeviceID();
+
+        $payload = [
+            'did' => $did,
+            'id' => time(),
+            'data' => [
+                'did' => $did,
+                'id' => time(),
+                'method' => 'get_properties',
+                'params' => [
+                    ['siid'=>2,'piid'=>1],
+                    ['siid'=>3,'piid'=>1],
+                    ['siid'=>4,'piid'=>2],
+                    ['siid'=>4,'piid'=>3],
+                    ['siid'=>4,'piid'=>4],
+                    ['siid'=>4,'piid'=>5],
+                    ['siid'=>4,'piid'=>7],
+                    ['siid'=>4,'piid'=>23],
+                ]
+            ]
+        ];
+
+        $result = $this->ApiCall($this->CommandPath(), $payload, true);
+        $this->SetValueSafe('LastResponse', $this->Encode($result));
+        return $result;
+    }
 }

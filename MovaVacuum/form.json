@@ -45,6 +45,27 @@
       ]
     },
     {
+  "type": "ExpansionPanel",
+  "caption": "FastCommand Tests",
+  "items": [
+    {
+      "type": "Button",
+      "caption": "Test get_status",
+      "onClick": "MOVA_TestFastCommand($id, 'get_status');"
+    },
+    {
+      "type": "Button",
+      "caption": "Test get_clean_record",
+      "onClick": "MOVA_TestFastCommand($id, 'get_clean_record');"
+    },
+    {
+      "type": "Button",
+      "caption": "Test get_properties (fast)",
+      "onClick": "MOVA_TestFastProperties($id);"
+    }
+  ]
+},
+    {
       "type": "ExpansionPanel",
       "caption": "Aktualisierung",
       "items": [
