@@ -296,9 +296,13 @@ class MovaVacuum extends IPSModule
             $result = $this->GetProperties($props);
             $items = $this->ExtractResultItems($result);
             if ($items !== []) {
-                $this->SetValueSafe('LastResponse', $this->Encode($result));
                 $this->ParseProperties($result);
-                return true;
+            }
+
+            // 🔥 IMMER zusätzlich Device Status holen!
+            $device = $this->GetSelectedDeviceFromCloud();
+            if ($device !== null) {
+                $this->ParseDeviceListStatus($device);
             }
 
             $device = $this->GetSelectedDeviceFromCloud();
