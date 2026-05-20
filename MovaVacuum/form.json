@@ -2,7 +2,7 @@
   "elements": [
     {
       "type": "Label",
-      "label": "MOVAhome Cloud Modul - Testversion fuer MOVA P50 Pro Ultra (mova.vacuum.r2587a)"
+      "label": "MOVAhome Cloud Modul - Testversion fuer MOVA P50 Pro Ultra"
     },
     {
       "type": "ExpansionPanel",
@@ -40,7 +40,7 @@
         {
           "type": "ValidationTextBox",
           "name": "Model",
-          "caption": "Modellfilter"
+          "caption": "Modellfilter (optional)"
         }
       ]
     },
