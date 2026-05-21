@@ -460,10 +460,9 @@ class MovaVacuum extends IPSModule
             ],
         ];
 
-        return $this->HttpRequest(
-            $this->CommandUrl(),
-            json_encode($payload),
-            true,
+        return $this->ApiCall(
+            $this->CommandPath(),
+            $payload,
             true
         );
     }
