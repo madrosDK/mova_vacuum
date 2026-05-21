@@ -961,8 +961,8 @@ class MovaVacuum extends IPSModule
         if ($status >= 0) {
             $this->SetValueSafe('StateCode', $status);
             $this->SetValueSafe(
-                'StatusText',
-                $this->BuildLiveStatus($device)
+                'StateCode',
+                $this->TranslateStatus($status)
             );
         } elseif (array_key_exists('online', $device)) {
             $this->SetValueSafe('StatusText', $device['online'] ? 'Online' : 'Offline');
