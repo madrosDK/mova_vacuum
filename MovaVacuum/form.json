@@ -141,6 +141,8 @@
         "caption": "Device-Info testen",
         "onClick": "MOVA_TestDeviceInfo($id);"
       }
+    ]
+  }
   ],
   "actions": [
     {
