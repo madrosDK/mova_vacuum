@@ -941,7 +941,7 @@ class MovaVacuum extends IPSModule
     }
 
 
-    
+
 
     private function TranslateStatus(int $status): string
     {
@@ -1052,6 +1052,79 @@ class MovaVacuum extends IPSModule
         }
 
         $this->SetValueSafe('VideoStatusText', $text);
+    }
+
+    public function TestEndpoint(string $path, string $payloadJson = '{}')
+    {
+        try {
+            $payload = json_decode($payloadJson, true);
+
+            if ($payload === null && trim($payloadJson) !== 'null') {
+                throw new Exception('Ungültiges JSON Payload');
+            }
+
+            if (!is_array($payload)) {
+                $payload = [];
+            }
+
+            if (!isset($payload['did']) || $payload['did'] === '') {
+                $payload['did'] = $this->GetDeviceID();
+            }
+
+            $result = $this->ApiCall($path, $payload, true);
+
+            $this->SetValueSafe('LastResponse', $this->Encode([
+                'path' => $path,
+                'payload' => $payload,
+                'result' => $result
+            ]));
+
+            return $result;
+
+        } catch (Exception $e) {
+            $this->HandleException('Endpoint Test', $e);
+            return false;
+        }
+    }
+
+    public function TestCleaningHistory()
+    {
+        return $this->TestEndpoint(
+            '/dreame-user-iot/cleanRecord/list',
+            '{"did":"","current":1,"size":20}'
+        );
+    }
+
+    public function TestTaskList()
+    {
+        return $this->TestEndpoint(
+            '/dreame-user-iot/task/list',
+            '{"did":"","current":1,"size":20}'
+        );
+    }
+
+    public function TestMapList()
+    {
+        return $this->TestEndpoint(
+            '/dreame-user-iot/map/list',
+            '{"did":""}'
+        );
+    }
+
+    public function TestDeviceStatus()
+    {
+        return $this->TestEndpoint(
+            '/dreame-user-iot/iotdevice/status',
+            '{"did":""}'
+        );
+    }
+
+    public function TestDeviceInfo()
+    {
+        return $this->TestEndpoint(
+            '/dreame-user-iot/iotdevice/info',
+            '{"did":""}'
+        );
     }
 
     private function HttpGet(string $url): string
