@@ -2,39 +2,16 @@
 
 ReadOnly-Modul für MOVAhome / MOVA P50 Pro Ultra.
 
-## Stand v0.6 build 1
+## v0.6 build 5
 
-Dieses Modul liest ausschließlich Daten über die funktionierende MOVAhome Cloud API aus.
+Bereinigter produktiver Stand:
 
-Aktuell genutzt:
-
-- `/dreame-user-iot/iotuserdata/getDeviceData`
-- `/dreame-user-iot/iotuserbind/device/listV2`
-- `keyDefine.url` zur dynamischen Statusübersetzung
+- Zugangsdaten/Loginbereich vorhanden
+- Statusabruf über MOVAhome Cloud
+- `device/listV2` als Hauptquelle
+- `getDeviceData` nur für verfügbare `prop.s_*` Konfigurationswerte
+- lokale IP, MiIO, Portscan und Explorer-Tests entfernt
+- Status wird als Text angezeigt, z. B. `🟢 Bereit (geladen)`
+- Akku bleibt eigene Variable
 
 Es werden keine Steuerbefehle an den Roboter gesendet.
-
-## Angezeigte Werte
-
-- Online
-- Akku
-- Status-Code
-- Status-Text
-- Firmware
-- Modell
-- Seriennummer
-- MAC-Adresse
-- Produkt-ID
-- Vendor
-- Feature-Codes
-- Cloud-/Bind-Domain
-- Icon-URL
-- KeyDefine-URL
-- Video/Kamera-Status
-- Gerätezeiten
-- Rohdaten der verfügbaren `prop.s_*` Konfigurationen
-
-## Hinweise
-
-Beim P50 Pro Ultra liefert `getDeviceData` aktuell hauptsächlich `prop.s_*` Konfigurationswerte. Die wichtigsten Live-Werte kommen zuverlässig über `device/listV2`.
-

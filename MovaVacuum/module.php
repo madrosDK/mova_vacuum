@@ -117,8 +117,6 @@ class MovaVacuum extends IPSModule
     {
         parent::Create();
 
-        
-
         $this->RegisterPropertyString('Username', '');
         $this->RegisterPropertyString('Password', '');
         $this->RegisterPropertyString('Region', 'eu');
@@ -161,10 +159,6 @@ class MovaVacuum extends IPSModule
     {
         parent::ApplyChanges();
 
-        $this->RegisterProfileIntegerText('MOVA.AreaM2', ' m²');
-        $this->RegisterProfileIntegerText('MOVA.Minutes', ' min');
-        $this->RegisterProfileIntegerText('MOVA.Maintenance', ' %');
-
         $this->RegisterVariableString('DeviceName', 'Geraet', '', 0);
         $this->RegisterVariableString('DeviceIDText', 'Device-ID', '', 1);
         $this->RegisterVariableString('DeviceModel', 'Modell', '', 2);
@@ -179,35 +173,27 @@ class MovaVacuum extends IPSModule
 
         $this->RegisterVariableBoolean('Online', 'Online', '~Switch', 11);
         $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 12);
-        $this->RegisterVariableString('StateCode', 'Status');
-        
+        $this->RegisterVariableString('StateCode', 'Status', '', 13);
+
         $this->RegisterVariableString('VideoStatusText', 'Video/Kamera', '', 15);
         $this->RegisterVariableInteger('VideoStatusCode', 'Video-Status-Code', '', 16);
         $this->RegisterVariableString('VideoOperation', 'Video-Operation', '', 17);
+        $this->RegisterVariableString('VideoOperType', 'Video-OperType', '', 18);
+        $this->RegisterVariableInteger('VideoResult', 'Video-Result', '', 19);
 
-        $this->RegisterVariableString('CloudStatus', 'Cloud-Status', '', 18);
-        $this->RegisterVariableString('Vendor', 'Vendor', '', 19);
-        $this->RegisterVariableString('SharedStatus', 'Shared-Status', '', 20);
-        $this->RegisterVariableString('DeviceTimes', 'Geraetezeiten', '', 21);
+        $this->RegisterVariableString('CloudStatus', 'Cloud-Status', '', 20);
+        $this->RegisterVariableString('Vendor', 'Vendor', '', 21);
+        $this->RegisterVariableString('SharedStatus', 'Shared-Status', '', 22);
+        $this->RegisterVariableString('IoTId', 'IoT-ID', '', 23);
+        $this->RegisterVariableInteger('LWT', 'LWT', '', 24);
+        $this->RegisterVariableInteger('FeatureCode', 'FeatureCode', '', 25);
+        $this->RegisterVariableInteger('FeatureCode2', 'FeatureCode2', '', 26);
+        $this->RegisterVariableString('FeatureFlags', 'Feature Flags', '', 27);
+        $this->RegisterVariableString('QuickConnects', 'QuickConnects', '', 28);
+        $this->RegisterVariableString('DeviceTimes', 'Geraetezeiten', '', 29);
 
         $this->RegisterVariableString('RawConfigData', 'getDeviceData Konfiguration', '', 40);
         $this->RegisterVariableString('LastResponse', 'Letzte Antwort', '', 50);
-
-        $this->RegisterVariableString('IoTId', 'IoT-ID');
-        $this->RegisterVariableInteger('LWT', 'LWT');
-
-        $this->RegisterVariableInteger('FeatureCode', 'FeatureCode');
-        $this->RegisterVariableInteger('FeatureCode2', 'FeatureCode2');
-
-        $this->RegisterVariableString('QuickConnects', 'QuickConnects');
-
-        $this->RegisterVariableString('VideoOperation', 'Video Operation');
-        $this->RegisterVariableString('VideoOperType', 'Video OperType');
-
-        $this->RegisterVariableInteger('VideoResult', 'Video Result');
-        $this->RegisterVariableInteger('VideoStatusCode', 'Video Status Code');
-
-        $this->RegisterVariableString('FeatureFlags', 'Feature Flags');
 
         $this->SyncSelectedDevice();
 
@@ -232,6 +218,7 @@ class MovaVacuum extends IPSModule
                 throw new Exception('Invalid ident: ' . $Ident);
         }
     }
+
 
 
     public function LoginAndDiscover()
@@ -867,8 +854,6 @@ class MovaVacuum extends IPSModule
         }
 
         $items = $this->ExtractResultItems($result);
-        $statusParts = [];
-
         foreach ($items as $item) {
             if (!is_array($item) || !array_key_exists('value', $item)) {
                 continue;
@@ -880,18 +865,10 @@ class MovaVacuum extends IPSModule
             $value = $item['value'];
 
             if ($did === '2.1') {
-              $this->SetValueSafe(
-                'StateCode',
-                $this->TranslateStatus($status)
-              );
-                $statusParts[] = $this->TranslateStatus((int)$value);
+                $this->SetValueSafe('StateCode', $this->TranslateStatus((int)$value));
             } elseif ($did === '3.1') {
                 $this->SetValueSafe('Battery', (int)$value);
             }
-        }
-
-        if ($statusParts !== []) {
-            $this->SetValueSafe('StatusText', implode(' / ', array_unique($statusParts)));
         }
     }
     private function ParseDeviceListStatus(array $device, bool $writeRaw = true): void
@@ -902,54 +879,43 @@ class MovaVacuum extends IPSModule
 
         $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
         $deviceInfo = is_array($device['deviceInfo'] ?? null) ? $device['deviceInfo'] : [];
-
-        $property = json_decode($device['property'] ?? '{}', true);
-
-        $this->SetValueSafe('IoTId', (string)($property['iotId'] ?? ''));
-        $this->SetValueSafe('LWT', (int)($property['lwt'] ?? 0));
-
-        $this->SetValueSafe('FeatureCode', (int)($device['featureCode'] ?? 0));
-
-        $featureCode2 = (int)($device['featureCode2'] ?? 0);
-
-        $this->SetValueSafe('FeatureCode2', $featureCode2);
-
-        $this->SetValueSafe(
-            'FeatureFlags',
-            implode(', ', $this->DecodeFeatureFlags($featureCode2))
-        );
-
-        $this->SetValueSafe(
-            'QuickConnects',
-            $this->Encode($deviceInfo['quickConnects'] ?? [])
-        );
+        $property = json_decode((string)($device['property'] ?? '{}'), true);
+        if (!is_array($property)) {
+            $property = [];
+        }
 
         $this->SetValueSafe('DeviceName', $this->DeviceCaption($device));
         $this->SetValueSafe('DeviceIDText', $did);
         $this->SetValueSafe('DeviceModel', (string)($device['model'] ?? ($deviceInfo['model'] ?? '')));
         $this->SetValueSafe('Firmware', (string)($device['ver'] ?? ($device['firmwareVersion'] ?? '')));
         $this->SetValueSafe('SerialNumber', (string)($device['sn'] ?? ($device['serialNumber'] ?? '')));
-        $this->SetValueSafe('MacAddress', (string)($device['mac'] ?? ($device['macAddress'] ?? '')));
+        $this->SetValueSafe('MacAddress', (string)($device['mac'] ?? ($device['macAddress'] ?? ($property['mac'] ?? ''))));
         $this->SetValueSafe('ProductID', (string)($deviceInfo['productId'] ?? ($device['productId'] ?? ($device['product_id'] ?? ''))));
         $this->SetValueSafe('BindDomain', (string)($device['bindDomain'] ?? ''));
         $this->SetValueSafe('Vendor', (string)($device['vendor'] ?? ''));
         $this->SetValueSafe('CloudStatus', (string)($deviceInfo['status'] ?? ''));
         $this->SetValueSafe('SharedStatus', (string)($device['sharedStatus'] ?? ''));
+        $this->SetValueSafe('IoTId', (string)($property['iotId'] ?? ''));
+        $this->SetValueSafe('LWT', (int)($property['lwt'] ?? 0));
 
         $imageUrl = (string)($deviceInfo['mainImage']['imageUrl'] ?? $deviceInfo['icon']['imageUrl'] ?? $device['icon'] ?? $device['image'] ?? '');
         $this->SetValueSafe('IconUrl', $imageUrl);
 
         $keyDefineUrl = (string)($device['keyDefine']['url'] ?? $device['keyDefineUrl'] ?? '');
         $this->SetValueSafe('KeyDefineUrl', $keyDefineUrl);
-        if ($keyDefineUrl !== '') {
-            $this->EnsureStatusMap($keyDefineUrl);
-        }
+
+        $featureCode = (int)($device['featureCode'] ?? 0);
+        $featureCode2 = (int)($device['featureCode2'] ?? 0);
+        $this->SetValueSafe('FeatureCode', $featureCode);
+        $this->SetValueSafe('FeatureCode2', $featureCode2);
+        $this->SetValueSafe('FeatureFlags', implode(', ', $this->DecodeFeatureFlags($featureCode2)));
 
         $features = $device['featureCodes'] ?? $device['featureCode'] ?? $deviceInfo['feature'] ?? $device['feature'] ?? null;
         if ($features !== null) {
             $this->SetValueSafe('FeatureCodes', is_array($features) ? implode(', ', array_map('strval', $features)) : (string)$features);
         }
 
+        $this->SetValueSafe('QuickConnects', $this->Encode($deviceInfo['quickConnects'] ?? []));
         $this->SetValueSafe('Online', (bool)($device['online'] ?? false));
 
         if (array_key_exists('battery', $device)) {
@@ -958,24 +924,12 @@ class MovaVacuum extends IPSModule
 
         $status = (int)($device['latestStatus'] ?? -1);
         if ($status >= 0) {
-            $this->SetValueSafe(
-                'StateCode',
-                $this->TranslateStatus($status)
-            );
+            $this->SetValueSafe('StateCode', $this->TranslateStatus($status));
         } elseif (array_key_exists('online', $device)) {
-            $this->SetValueSafe('StatusText', $device['online'] ? 'Online' : 'Offline');
+            $this->SetValueSafe('StateCode', $device['online'] ? '🟢 Online' : '🔴 Offline');
         }
 
         $this->ParseVideoStatus($device['videoStatus'] ?? '');
-
-        $video = json_decode($device['videoStatus'] ?? '{}', true);
-
-        $this->SetValueSafe('VideoOperation', (string)($video['operation'] ?? ''));
-        $this->SetValueSafe('VideoOperType', (string)($video['operType'] ?? ''));
-
-        $this->SetValueSafe('VideoResult', (int)($video['result'] ?? 0));
-
-        $this->SetValueSafe('VideoStatusCode', (int)($video['status'] ?? 0));
 
         $times = [
             'updateTime' => $device['updateTime'] ?? '',
@@ -984,67 +938,67 @@ class MovaVacuum extends IPSModule
             'releaseAt' => $this->FormatTimestampMs($deviceInfo['releaseAt'] ?? null),
         ];
         $this->SetValueSafe('DeviceTimes', $this->Encode($times));
-
-        if (array_key_exists('online', $device) && !$device['online']) {
-            $this->SetValueSafe('ErrorText', 'Offline');
-        } else {
-            $this->SetValueSafe('ErrorText', 'Kein Fehler');
-        }
     }
-
-    private function DecodeFeatureFlags(int $flags): array
-    {
-        $map = [
-            1  => 'Kamera',
-            2  => 'Mopp',
-            4  => 'Trocknung',
-            8  => 'Auto-Entleerung',
-            16 => 'AI',
-            32 => 'Pet Features',
-            64 => 'Wasserstation',
-            128 => 'Live Monitoring',
-        ];
-
-        $result = [];
-
-        foreach ($map as $bit => $label) {
-            if (($flags & $bit) === $bit) {
-                $result[] = $label;
-            }
-        }
-
-        return $result;
-    }
-
-
     private function TranslateStatus(int $status): string
     {
         $map = [
-            1  => '🟢 Bereit',
-            2  => '😴 Schlafmodus',
+            -1 => '❓ Unbekannt',
+            1  => '🧹 Reinigt',
+            2  => '🟢 Bereit',
             3  => '⏸️ Pausiert',
-            4  => '🧹 Reinigung läuft',
-            5  => '🏠 Rückkehr zur Station',
-            6  => '🔋 Lädt',
-            7  => '⚠️ Fehler',
-            8  => '🧼 Mopp wird gereinigt',
-            9  => '🌬️ Mopp wird getrocknet',
-            10 => '🚪 Raumreinigung',
-            11 => '📦 Zonenreinigung',
-            12 => '🗺️ Kartenverwaltung',
+            4  => '⚠️ Fehler',
+            5  => '🏠 Faehrt zur Station',
+            6  => '🔋 Laedt',
+            7  => '🧽 Wischt',
+            8  => '🌬️ Trocknet',
+            9  => '🧼 Waescht',
+            10 => '🚿 Faehrt zum Waschen',
+            11 => '🗺️ Kartierung',
+            12 => '🧹 Saugt und wischt',
             13 => '🟢 Bereit (geladen)',
-            14 => '🚿 Reinigung an Station',
-            15 => '🌬️ Trocknung läuft',
-            16 => '🗑️ Staubentleerung',
-            17 => '💧 Wasser wird nachgefüllt',
-            18 => '🚱 Schmutzwasser',
-            19 => '📷 Kamera aktiv',
-            20 => '⚡ Shortcut läuft',
-            21 => '✅ Laden beendet',
+            14 => '⬆️ Update',
+            15 => '📍 Zum Reinigen gerufen',
+            16 => '🛠️ Selbstreparatur',
+            17 => '🧽 Faehrt zum Mopp einsetzen',
+            18 => '🧽 Faehrt zum Mopp entfernen',
+            19 => '💧 Wasserstation Selbsttest',
+            20 => '🧼 Mopp wird gereinigt und Wasser aufgefuellt',
+            21 => '⏸️ Reinigung pausiert',
+            22 => '🗑️ Auto-Entleerung',
+            23 => '🎮 Fernsteuerung',
+            24 => '🔋 Intelligentes Laden',
+            25 => '🧹 Zweite Reinigung',
+            26 => '➡️ Folgt',
+            27 => '📍 Spot-Reinigung',
+            28 => '🗑️ Faehrt zur Staubentleerung',
+            29 => '⏳ Wartet auf Aufgaben',
+            30 => '🧼 Waschbrett wird gereinigt',
+            31 => '🗑️ Faehrt zum Entleeren',
+            32 => '🗑️ Entleert',
+            33 => '💧 Wasserversorgung/Entleerung',
+            34 => '💧 Entleerung',
+            35 => '🌬️ Staubbeutel trocknet',
+            36 => '⏸️ Staubbeutel-Trocknung pausiert',
+            37 => '🧹 Faehrt zur Zusatzreinigung',
+            38 => '🧹 Zusatzreinigung',
+            95 => '🐾 Haustiersuche pausiert',
+            96 => '🐾 Haustiersuche',
+            97 => '⚡ Shortcut laeuft',
+            98 => '📷 Kameraueberwachung',
+            99 => '⏸️ Kameraueberwachung pausiert',
+            101 => '🧹 Initiale Tiefenreinigung',
+            102 => '⏸️ Initiale Tiefenreinigung pausiert',
+            103 => '🧴 Desinfiziert',
+            104 => '🧴 Desinfiziert und trocknet',
+            105 => '🧽 Moppwechsel',
+            106 => '⏸️ Moppwechsel pausiert',
+            107 => '✨ Bodenpflege',
+            108 => '⏸️ Bodenpflege pausiert',
         ];
 
         return $map[$status] ?? ('❓ Unbekannt (' . $status . ')');
     }
+
 
     private function EnsureStatusMap(string $url): void
     {
@@ -1147,10 +1101,6 @@ class MovaVacuum extends IPSModule
         $this->SetValueSafe('VideoStatusText', $text);
     }
 
-
-
-
-
     private function HttpGet(string $url): string
     {
         $this->Log('HTTP GET ' . $url);
@@ -1198,6 +1148,30 @@ class MovaVacuum extends IPSModule
         }
 
         return date('Y-m-d H:i:s', $ts);
+    }
+
+
+    private function DecodeFeatureFlags(int $flags): array
+    {
+        $map = [
+            1   => 'Kamera/Video',
+            2   => 'Mopp',
+            4   => 'Trocknung',
+            8   => 'Auto-Entleerung',
+            16  => 'AI',
+            32  => 'Pet Features',
+            64  => 'Wasserstation',
+            128 => 'Live Monitoring',
+        ];
+
+        $result = [];
+        foreach ($map as $bit => $label) {
+            if (($flags & $bit) === $bit) {
+                $result[] = $label;
+            }
+        }
+
+        return $result;
     }
 
     private function GetIDForIdentSafe(string $ident)

@@ -6,6 +6,50 @@
     },
     {
       "type": "ExpansionPanel",
+      "caption": "Zugangsdaten",
+      "items": [
+        {
+          "type": "ValidationTextBox",
+          "name": "Username",
+          "caption": "E-Mail"
+        },
+        {
+          "type": "PasswordTextBox",
+          "name": "Password",
+          "caption": "Passwort"
+        },
+        {
+          "type": "Select",
+          "name": "Region",
+          "caption": "Region",
+          "options": [
+            {
+              "caption": "EU",
+              "value": "eu"
+            },
+            {
+              "caption": "CN",
+              "value": "cn"
+            },
+            {
+              "caption": "US",
+              "value": "us"
+            },
+            {
+              "caption": "SG",
+              "value": "sg"
+            }
+          ]
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "DeviceID",
+          "caption": "Device-ID"
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
       "caption": "Aktualisierung",
       "items": [
         {
