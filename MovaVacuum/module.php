@@ -647,7 +647,6 @@ class MovaVacuum extends IPSModule
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
@@ -664,8 +663,6 @@ class MovaVacuum extends IPSModule
             CURLOPT_FORBID_REUSE => true,
 
             CURLOPT_PROXY => '',
-
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
