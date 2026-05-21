@@ -136,6 +136,19 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyString('ExplorerPath', '/dreame-user-iot/iotuserdata/getDeviceData');
         $this->RegisterPropertyString('ExplorerPayload', '{"did":"","model":[{"siid":2,"piid":1},{"siid":3,"piid":1},{"siid":4,"piid":2},{"siid":4,"piid":3}]}');
 
+        $this->RegisterVariableBoolean('Online', 'Online');
+        $this->RegisterVariableInteger('Battery', 'Akku');
+        $this->RegisterVariableInteger('LatestStatus', 'Status Code');
+
+        $this->RegisterVariableString('StatusText', 'Status');
+        $this->RegisterVariableString('Firmware', 'Firmware');
+        $this->RegisterVariableString('Model', 'Modell');
+        $this->RegisterVariableString('SerialNumber', 'Seriennummer');
+        $this->RegisterVariableString('MacAddress', 'MAC');
+        $this->RegisterVariableString('BindDomain', 'Bind Domain');
+        $this->RegisterVariableString('ProductId', 'Produkt-ID');
+        $this->RegisterVariableString('Feature', 'Feature');
+
 
 
 
@@ -552,6 +565,35 @@ class MovaVacuum extends IPSModule
 
             $this->PropertyRequest('smart_drying', 25, 1),
         ];
+    }
+
+    private function TranslateStatus(int $status): string
+    {
+        $map = [
+            1 => 'Standby',
+            2 => 'Schlafen',
+            3 => 'Pausiert',
+            4 => 'Reinigung',
+            5 => 'Zurück zur Station',
+            6 => 'Laden',
+            7 => 'Fehler',
+            8 => 'Mopp reinigen',
+            9 => 'Mopp trocknen',
+            10 => 'Raumreinigung',
+            11 => 'Zonenreinigung',
+            12 => 'Kartenverwaltung',
+            13 => 'Standby',
+            14 => 'Waschen',
+            15 => 'Trocknen',
+            16 => 'Auto-Entleerung',
+            17 => 'Wasser nachfüllen',
+            18 => 'Abwasser',
+            19 => 'Kamera aktiv',
+            20 => 'Shortcut läuft',
+            21 => 'Laden beendet',
+        ];
+
+        return $map[$status] ?? ('Unbekannt (' . $status . ')');
     }
 
     private function PropertyRequest(string $name, int $siid, int $piid): array
@@ -1047,6 +1089,28 @@ class MovaVacuum extends IPSModule
         $this->SetValueSafe('IconUrl', (string)($device['icon'] ?? $device['image'] ?? $device['mainImage'] ?? $device['deviceInfo']['imageUrl'] ?? ''));
         $this->SetValueSafe('KeyDefineUrl', (string)($device['keyDefine']['url'] ?? $device['keyDefineUrl'] ?? ''));
 
+        $this->SetValueSafe('Online', (bool)($device['online'] ?? false));
+
+        $battery = (int)($device['battery'] ?? 0);
+        $this->SetValueSafe('Battery', $battery);
+
+        $status = (int)($device['latestStatus'] ?? 0);
+
+        $this->SetValueSafe('LatestStatus', $status);
+        $this->SetValueSafe('StatusText', $this->TranslateStatus($status));
+
+        $this->SetValueSafe('Firmware', (string)($device['ver'] ?? ''));
+        $this->SetValueSafe('Model', (string)($device['model'] ?? ''));
+        $this->SetValueSafe('SerialNumber', (string)($device['sn'] ?? ''));
+        $this->SetValueSafe('MacAddress', (string)($device['mac'] ?? ''));
+        $this->SetValueSafe('BindDomain', (string)($device['bindDomain'] ?? ''));
+
+        $productId = $device['deviceInfo']['productId'] ?? '';
+        $feature = $device['deviceInfo']['feature'] ?? '';
+
+        $this->SetValueSafe('ProductId', (string)$productId);
+        $this->SetValueSafe('Feature', (string)$feature);
+
         $features = $device['featureCodes'] ?? $device['featureCode'] ?? $device['feature'] ?? null;
         if ($features !== null) {
             $this->SetValueSafe('FeatureCodes', is_array($features) ? implode(', ', array_map('strval', $features)) : (string)$features);
@@ -1075,6 +1139,35 @@ class MovaVacuum extends IPSModule
         }
     }
 
+    private function TranslateStatus(int $status): string
+    {
+        $map = [
+            1 => 'Standby',
+            2 => 'Schlafen',
+            3 => 'Pausiert',
+            4 => 'Reinigung',
+            5 => 'Zurück zur Station',
+            6 => 'Laden',
+            7 => 'Fehler',
+            8 => 'Mopp reinigen',
+            9 => 'Mopp trocknen',
+            10 => 'Raumreinigung',
+            11 => 'Zonenreinigung',
+            12 => 'Kartenverwaltung',
+            13 => 'Standby',
+            14 => 'Waschen',
+            15 => 'Trocknen',
+            16 => 'Auto-Entleerung',
+            17 => 'Wasser nachfüllen',
+            18 => 'Abwasser',
+            19 => 'Kamera aktiv',
+            20 => 'Shortcut läuft',
+            21 => 'Laden beendet',
+        ];
+
+        return $map[$status] ?? ('Unbekannt (' . $status . ')');
+    }
+    
     private function GetIDForIdentSafe(string $ident)
     {
         return @$this->GetIDForIdent($ident);
