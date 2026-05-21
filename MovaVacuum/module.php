@@ -159,7 +159,7 @@ class MovaVacuum extends IPSModule
         $this->RegisterAttributeString('DiscoveredDevices', '[]');
         $this->RegisterAttributeString('LastDeviceID', '');
 
-        $this->RegisterTimer(self::TIMER_UPDATE, 0, 'MOVA_Update($_IPS[\'TARGET\']);');
+        $this->RegisterTimer(self::TIMER_UPDATE, 0, 'IPS_RequestAction($_IPS["TARGET"], "Update", true);');
     }
 
     public function GetConfigurationForm()
@@ -251,6 +251,10 @@ class MovaVacuum extends IPSModule
     public function RequestAction($Ident, $Value)
     {
         switch ($Ident) {
+            case 'Update':
+                $this->Update();
+                break;
+
             case 'SuctionLevel':
                 $this->SetProperty(4, 4, (int)$Value);
                 break;
@@ -462,12 +466,14 @@ class MovaVacuum extends IPSModule
 
         $id = time();
         $normalizedParams = $this->NormalizeRpcParams($params, $did);
-        $payload = [
-            'did' => $did,
-            'id' => $id,
-            'method' => $method,
-            'params' => $normalizedParams,
-        ];
+        $id = time();
+
+            $payload = [
+                'did' => $did,
+                'id' => $id,
+                'method' => $method,
+                'params' => $params,
+            ];
 
         return $this->ApiCall(
             $this->CommandPath(),
@@ -538,8 +544,6 @@ class MovaVacuum extends IPSModule
             $this->PropertyRequest('mop_pad_left', 18, 1),
             $this->PropertyRequest('resume_clean', 4, 26),
             $this->PropertyRequest('clean_percent', 4, 27),
-            $this->PropertyRequest('resume_clean', 4, 26),
-
             $this->PropertyRequest('map_status', 6, 1),
             $this->PropertyRequest('map_id', 6, 2),
 
@@ -1139,34 +1143,7 @@ class MovaVacuum extends IPSModule
         }
     }
 
-    private function TranslateStatus(int $status): string
-    {
-        $map = [
-            1 => 'Standby',
-            2 => 'Schlafen',
-            3 => 'Pausiert',
-            4 => 'Reinigung',
-            5 => 'Zurück zur Station',
-            6 => 'Laden',
-            7 => 'Fehler',
-            8 => 'Mopp reinigen',
-            9 => 'Mopp trocknen',
-            10 => 'Raumreinigung',
-            11 => 'Zonenreinigung',
-            12 => 'Kartenverwaltung',
-            13 => 'Standby',
-            14 => 'Waschen',
-            15 => 'Trocknen',
-            16 => 'Auto-Entleerung',
-            17 => 'Wasser nachfüllen',
-            18 => 'Abwasser',
-            19 => 'Kamera aktiv',
-            20 => 'Shortcut läuft',
-            21 => 'Laden beendet',
-        ];
-
-        return $map[$status] ?? ('Unbekannt (' . $status . ')');
-    }
+    
     
     private function GetIDForIdentSafe(string $ident)
     {
@@ -1288,11 +1265,13 @@ class MovaVacuum extends IPSModule
                 throw new Exception('Parameter sind kein gültiges JSON');
             }
 
+            $id = time();
+
             $payload = [
                 'did' => $did,
                 'id' => $id,
                 'method' => $method,
-                'params' => $normalizedParams,
+                'params' => $params,
             ];
 
             $result = $this->HttpRequest(
