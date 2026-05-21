@@ -2,7 +2,7 @@
   "elements": [
     {
       "type": "Label",
-      "label": "MOVA Vacuum (MOVAhome / P50 Pro Ultra)"
+      "label": "MOVA Vacuum ReadOnly (MOVAhome / P50 Pro Ultra)"
     },
     {
       "type": "ExpansionPanel",
@@ -50,64 +50,65 @@
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Steuerung",
+      "caption": "Aktualisierung",
       "items": [
         {
-          "type": "Button",
-          "caption": "Start",
-          "onClick": "MOVA_SendSimpleCommand($id, 'start');"
+          "type": "NumberSpinner",
+          "name": "UpdateInterval",
+          "caption": "Aktualisierungsintervall (Sekunden)",
+          "minimum": 0
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseMD5Password",
+          "caption": "MOVA Passwort mit Salt/MD5 verwenden"
+        },
+        {
+          "type": "CheckBox",
+          "name": "Debug",
+          "caption": "Debug aktivieren"
         },
         {
           "type": "Button",
-          "caption": "Pause",
-          "onClick": "MOVA_SendSimpleCommand($id, 'pause');"
+          "caption": "Login + Geräte suchen",
+          "onClick": "MOVA_LoginAndDiscover($id);"
         },
-        {
-          "type": "Button",
-          "caption": "Dock",
-          "onClick": "MOVA_SendSimpleCommand($id, 'charge');"
-        },
-        {
-          "type": "Button",
-          "caption": "Stop",
-          "onClick": "MOVA_SendSimpleCommand($id, 'stop');"
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Test / Debug",
-      "items": [
         {
           "type": "Button",
           "caption": "Status aktualisieren",
-          "onClick": "MOVA_Update($id);"
+          "onClick": "MOVA_Refresh($id);"
         },
         {
           "type": "Button",
-          "caption": "Default Properties",
+          "caption": "Default Properties testen",
           "onClick": "MOVA_TestDefaultProperties($id);"
         }
       ]
     },
     {
       "type": "ExpansionPanel",
-      "caption": "FastCommand Explorer",
+      "caption": "Expertenwerte",
+      "expanded": false,
       "items": [
         {
           "type": "ValidationTextBox",
-          "name": "TestMethod",
-          "caption": "Methode"
+          "name": "BaseUrl",
+          "caption": "Base URL leer = automatisch"
         },
         {
           "type": "ValidationTextBox",
-          "name": "TestParams",
-          "caption": "Params JSON"
+          "name": "AuthBasic",
+          "caption": "Auth Basic leer = automatisch"
         },
         {
-          "type": "Button",
-          "caption": "FastCommand testen",
-          "onClick": "MOVA_TestFastCommand($id);"
+          "type": "ValidationTextBox",
+          "name": "TenantId",
+          "caption": "Tenant-ID"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "Model",
+          "caption": "Modellfilter optional"
         }
       ]
     }
@@ -115,8 +116,8 @@
   "actions": [
     {
       "type": "Button",
-      "caption": "Update",
-      "onClick": "MOVA_Update($id);"
+      "caption": "Status aktualisieren",
+      "onClick": "MOVA_Refresh($id);"
     }
   ],
   "status": [
@@ -129,6 +130,11 @@
       "code": 102,
       "icon": "active",
       "caption": "Aktiv"
+    },
+    {
+      "code": 104,
+      "icon": "inactive",
+      "caption": "Zugangsdaten fehlen"
     },
     {
       "code": 201,
