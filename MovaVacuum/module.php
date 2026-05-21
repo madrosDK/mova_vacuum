@@ -647,8 +647,6 @@ class MovaVacuum extends IPSModule
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_CAINFO, '');
-        curl_setopt($ch, CURLOPT_CAPATH, '');
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -658,11 +656,15 @@ class MovaVacuum extends IPSModule
             CURLOPT_POSTFIELDS => $data ?? '',
             CURLOPT_ENCODING => '',
 
-            // 🔥 MOVA fastCommand SSL Fix
             CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => 0,
+            CURLOPT_SSL_VERIFYHOST => false,
 
-            // 🔥 wichtig für Ali IoT
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_FRESH_CONNECT => true,
+            CURLOPT_FORBID_REUSE => true,
+
+            CURLOPT_PROXY => '',
+
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         ]);
         $body = curl_exec($ch);
