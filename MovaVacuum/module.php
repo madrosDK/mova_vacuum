@@ -525,6 +525,32 @@ class MovaVacuum extends IPSModule
             $this->PropertyRequest('mop_pad_left', 18, 1),
             $this->PropertyRequest('resume_clean', 4, 26),
             $this->PropertyRequest('clean_percent', 4, 27),
+            $this->PropertyRequest('resume_clean', 4, 26),
+
+            $this->PropertyRequest('map_status', 6, 1),
+            $this->PropertyRequest('map_id', 6, 2),
+
+            $this->PropertyRequest('dust_collection', 7, 1),
+            $this->PropertyRequest('auto_empty_status', 7, 2),
+
+            $this->PropertyRequest('water_tank', 8, 1),
+            $this->PropertyRequest('dirty_water_tank', 8, 2),
+
+            $this->PropertyRequest('dock_state', 15, 1),
+            $this->PropertyRequest('mop_wash_state', 15, 2),
+            $this->PropertyRequest('drying_state', 15, 3),
+
+            $this->PropertyRequest('camera_state', 20, 1),
+
+            $this->PropertyRequest('pet_mode', 21, 1),
+
+            $this->PropertyRequest('voice_volume', 22, 1),
+
+            $this->PropertyRequest('carpet_boost', 23, 1),
+
+            $this->PropertyRequest('auto_reclean', 24, 1),
+
+            $this->PropertyRequest('smart_drying', 25, 1),
         ];
     }
 
