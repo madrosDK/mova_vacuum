@@ -6,65 +6,6 @@
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Zugangsdaten",
-      "items": [
-        {
-          "type": "ValidationTextBox",
-          "name": "Username",
-          "caption": "E-Mail"
-        },
-        {
-          "type": "PasswordTextBox",
-          "name": "Password",
-          "caption": "Passwort"
-        },
-        {
-          "type": "Select",
-          "name": "Region",
-          "caption": "Region",
-          "options": [
-            {
-              "caption": "EU",
-              "value": "eu"
-            },
-            {
-              "caption": "CN",
-              "value": "cn"
-            },
-            {
-              "caption": "US",
-              "value": "us"
-            },
-            {
-              "caption": "SG",
-              "value": "sg"
-            }
-          ]
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "DeviceID",
-          "caption": "Device-ID"
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "LocalIP",
-          "caption": "Lokale IP"
-        },
-        {
-          "type": "Button",
-          "caption": "MiIO Handshake testen",
-          "onClick": "MOVA_TestMiioHandshake($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Lokale Ports testen",
-          "onClick": "MOVA_TestLocalPorts($id);"
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
       "caption": "Aktualisierung",
       "items": [
         {
@@ -126,38 +67,7 @@
           "caption": "Modellfilter optional"
         }
       ]
-    },
-    {
-    "type": "ExpansionPanel",
-    "caption": "ReadOnly Explorer",
-    "items": [
-      {
-        "type": "Button",
-        "caption": "Reinigungshistorie testen",
-        "onClick": "MOVA_TestCleaningHistory($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Task-Liste testen",
-        "onClick": "MOVA_TestTaskList($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Kartenliste testen",
-        "onClick": "MOVA_TestMapList($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Device-Status testen",
-        "onClick": "MOVA_TestDeviceStatus($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Device-Info testen",
-        "onClick": "MOVA_TestDeviceInfo($id);"
-      }
-    ]
-  }
+    }
   ],
   "actions": [
     {
