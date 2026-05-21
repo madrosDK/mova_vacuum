@@ -179,7 +179,7 @@ class MovaVacuum extends IPSModule
 
         $this->RegisterVariableBoolean('Online', 'Online', '~Switch', 11);
         $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 12);
-        $this->RegisterVariableInteger('StateCode', 'Status-Code', '', 13);
+        $this->RegisterVariableInteger('StateCode', 'Status', '', 13);
         $this->RegisterVariableString('StatusText', 'Status', '', 14);
 
         $this->RegisterVariableString('VideoStatusText', 'Video/Kamera', '', 15);
@@ -881,7 +881,10 @@ class MovaVacuum extends IPSModule
             $value = $item['value'];
 
             if ($did === '2.1') {
-                $this->SetValueSafe('StateCode', (int)$value);
+              $this->SetValueSafe(
+                'StateCode',
+                $this->TranslateStatus($status)
+              );
                 $statusParts[] = $this->TranslateStatus((int)$value);
             } elseif ($did === '3.1') {
                 $this->SetValueSafe('Battery', (int)$value);
@@ -1018,12 +1021,31 @@ class MovaVacuum extends IPSModule
 
     private function TranslateStatus(int $status): string
     {
-        $map = json_decode($this->ReadAttributeString('StatusMap'), true);
-        if (is_array($map) && isset($map[(string)$status]) && $map[(string)$status] !== '') {
-            return (string)$map[(string)$status];
-        }
+        $map = [
+            1  => '🟢 Bereit',
+            2  => '😴 Schlafmodus',
+            3  => '⏸️ Pausiert',
+            4  => '🧹 Reinigung läuft',
+            5  => '🏠 Rückkehr zur Station',
+            6  => '🔋 Lädt',
+            7  => '⚠️ Fehler',
+            8  => '🧼 Mopp wird gereinigt',
+            9  => '🌬️ Mopp wird getrocknet',
+            10 => '🚪 Raumreinigung',
+            11 => '📦 Zonenreinigung',
+            12 => '🗺️ Kartenverwaltung',
+            13 => '🟢 Bereit (geladen)',
+            14 => '🚿 Reinigung an Station',
+            15 => '🌬️ Trocknung läuft',
+            16 => '🗑️ Staubentleerung',
+            17 => '💧 Wasser wird nachgefüllt',
+            18 => '🚱 Schmutzwasser',
+            19 => '📷 Kamera aktiv',
+            20 => '⚡ Shortcut läuft',
+            21 => '✅ Laden beendet',
+        ];
 
-        return self::STATE_NAMES[$status] ?? ('Unbekannt (' . $status . ')');
+        return $map[$status] ?? ('❓ Unbekannt (' . $status . ')');
     }
 
     private function EnsureStatusMap(string $url): void
