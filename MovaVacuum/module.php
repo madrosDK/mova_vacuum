@@ -957,7 +957,10 @@ class MovaVacuum extends IPSModule
         $status = (int)($device['latestStatus'] ?? -1);
         if ($status >= 0) {
             $this->SetValueSafe('StateCode', $status);
-            $this->SetValueSafe('StatusText', $this->TranslateStatus($status));
+            $this->SetValueSafe(
+                'StatusText',
+                $this->BuildLiveStatus($device)
+            );
         } elseif (array_key_exists('online', $device)) {
             $this->SetValueSafe('StatusText', $device['online'] ? 'Online' : 'Offline');
         }
@@ -1336,7 +1339,61 @@ class MovaVacuum extends IPSModule
 
         return true;
     }
-    
+
+    private function BuildLiveStatus(array $device): string
+    {
+        $online = (bool)($device['online'] ?? false);
+
+        if (!$online) {
+            return '🔴 Offline';
+        }
+
+        $battery = (int)($device['battery'] ?? 0);
+
+        $status = (int)($device['latestStatus'] ?? -1);
+
+        $map = [
+            1  => '🟢 Bereit',
+            2  => '😴 Schlafmodus',
+            3  => '⏸️ Pausiert',
+            4  => '🧹 Reinigung läuft',
+            5  => '🏠 Rückkehr zur Station',
+            6  => '🔋 Lädt',
+            7  => '⚠️ Fehler',
+            8  => '🧼 Mopp wird gereinigt',
+            9  => '🌬️ Mopp wird getrocknet',
+            10 => '🚪 Raumreinigung',
+            11 => '📦 Zonenreinigung',
+            12 => '🗺️ Kartenverwaltung',
+            13 => '🟢 Bereit (geladen)',
+            14 => '🚿 Reinigung an Station',
+            15 => '🌬️ Trocknung läuft',
+            16 => '🗑️ Staubentleerung',
+            17 => '💧 Wasser wird nachgefüllt',
+            18 => '🚱 Schmutzwasser',
+            19 => '📷 Kamera aktiv',
+            20 => '⚡ Shortcut läuft',
+            21 => '✅ Laden beendet',
+        ];
+
+        $text = $map[$status] ?? ('❓ Unbekannt (' . $status . ')');
+
+        $text .= ' • Akku: ' . $battery . '%';
+
+        $video = json_decode($device['videoStatus'] ?? '{}', true);
+
+        if (is_array($video)) {
+
+            $operation = $video['operation'] ?? '';
+
+            if ($operation === 'monitor') {
+                $text .= ' • 📷 Monitoring';
+            }
+        }
+
+        return $text;
+    }
+
     private function HttpGet(string $url): string
     {
         $this->Log('HTTP GET ' . $url);
