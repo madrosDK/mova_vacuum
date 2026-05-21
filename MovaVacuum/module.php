@@ -1267,6 +1267,76 @@ class MovaVacuum extends IPSModule
         return true;
     }
 
+    public function TestLocalPorts()
+    {
+        $ip = trim($this->ReadPropertyString('LocalIP'));
+
+        if ($ip === '') {
+            throw new Exception('Keine lokale IP gesetzt');
+        }
+
+        $ports = [
+            23,
+            53,
+            80,
+            443,
+            8000,
+            8080,
+            54321,
+            54322,
+            6668,
+            1883,
+            8883
+        ];
+
+        $result = [];
+
+        foreach ($ports as $port) {
+
+            $this->Log('Teste Port ' . $port);
+
+            $errno = 0;
+            $errstr = '';
+
+            $fp = @fsockopen(
+                $ip,
+                $port,
+                $errno,
+                $errstr,
+                1.5
+            );
+
+            if ($fp) {
+
+                fclose($fp);
+
+                $this->Log('Port OFFEN: ' . $port);
+
+                $result[] = [
+                    'port' => $port,
+                    'open' => true
+                ];
+
+            } else {
+
+                $this->Log('Port geschlossen: ' . $port);
+
+                $result[] = [
+                    'port' => $port,
+                    'open' => false,
+                    'error' => $errstr
+                ];
+            }
+        }
+
+        $this->SetValueSafe(
+            'LastResponse',
+            $this->Encode($result)
+        );
+
+        return true;
+    }
+    
     private function HttpGet(string $url): string
     {
         $this->Log('HTTP GET ' . $url);

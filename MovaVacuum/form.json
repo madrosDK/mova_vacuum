@@ -55,6 +55,11 @@
           "type": "Button",
           "caption": "MiIO Handshake testen",
           "onClick": "MOVA_TestMiioHandshake($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Lokale Ports testen",
+          "onClick": "MOVA_TestLocalPorts($id);"
         }
       ]
     },
