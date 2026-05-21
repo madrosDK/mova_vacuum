@@ -649,7 +649,6 @@ class MovaVacuum extends IPSModule
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_CAINFO, '');
         curl_setopt($ch, CURLOPT_CAPATH, '');
-        curl_setopt($ch, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -664,7 +663,6 @@ class MovaVacuum extends IPSModule
             CURLOPT_SSL_VERIFYHOST => 0,
 
             // 🔥 wichtig für Ali IoT
-            CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         ]);
         $body = curl_exec($ch);
