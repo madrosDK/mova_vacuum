@@ -179,9 +179,8 @@ class MovaVacuum extends IPSModule
 
         $this->RegisterVariableBoolean('Online', 'Online', '~Switch', 11);
         $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 12);
-        $this->RegisterVariableInteger('StateCode', 'Status', '', 13);
-        $this->RegisterVariableString('StatusText', 'Status', '', 14);
-
+        $this->RegisterVariableString('StateCode', 'Status');
+        
         $this->RegisterVariableString('VideoStatusText', 'Video/Kamera', '', 15);
         $this->RegisterVariableInteger('VideoStatusCode', 'Video-Status-Code', '', 16);
         $this->RegisterVariableString('VideoOperation', 'Video-Operation', '', 17);
