@@ -327,7 +327,7 @@ class MovaVacuum extends IPSModule
 
     public function Start()
     {
-        return $this->SendRpc('getDeviceData', []);
+        return $this->SendSimpleCommand('start');
     }
 
     public function Pause()
