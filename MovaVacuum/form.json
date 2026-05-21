@@ -150,6 +150,27 @@
           "onClick": "MOVA_XiaomiDockTest($id);"
         }
       ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "FastCommand Explorer",
+      "items": [
+        {
+          "type": "ValidationTextBox",
+          "name": "TestMethod",
+          "caption": "Methode"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "TestParams",
+          "caption": "Params JSON"
+        },
+        {
+          "type": "Button",
+          "caption": "FastCommand testen",
+          "onClick": "MOVA_TestFastCommand($id);"
+        }
+      ]
     }
   ],
   "actions": [

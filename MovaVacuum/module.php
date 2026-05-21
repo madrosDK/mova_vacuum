@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/MiioCloud.php';
 
 class MovaVacuum extends IPSModule
 {
@@ -123,6 +122,8 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyString('Password', '');
         $this->RegisterPropertyString('Region', 'eu');
         $this->RegisterPropertyString('DeviceID', '');
+        $this->RegisterPropertyString('TestMethod', '');
+        $this->RegisterPropertyString('TestParams', '[]');
         $this->RegisterPropertyInteger('UpdateInterval', 60);
         $this->RegisterPropertyBoolean('UseMD5Password', true);
         $this->RegisterPropertyBoolean('Debug', true);
@@ -1349,6 +1350,30 @@ class MovaVacuum extends IPSModule
             return $result;
         } catch (Exception $e) {
             $this->HandleException($label, $e);
+            return false;
+        }
+    }
+
+
+    public function TestFastCommand()
+    {
+        try {
+
+            $method = trim($this->ReadPropertyString('TestMethod'));
+            $params = json_decode($this->ReadPropertyString('TestParams'), true);
+
+            if (!is_array($params)) {
+                $params = [];
+            }
+
+            $result = $this->SendRpc($method, $params);
+
+            $this->SetValueSafe('LastResponse', $this->Encode($result));
+
+            return $result;
+
+        } catch (Exception $e) {
+            $this->HandleException('FastCommand Test', $e);
             return false;
         }
     }
