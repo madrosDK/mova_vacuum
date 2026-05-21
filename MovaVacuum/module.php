@@ -117,6 +117,8 @@ class MovaVacuum extends IPSModule
     {
         parent::Create();
 
+        $this->RegisterPropertyString('LocalIP', '');
+
         $this->RegisterPropertyString('Username', '');
         $this->RegisterPropertyString('Password', '');
         $this->RegisterPropertyString('Region', 'eu');
@@ -1193,6 +1195,76 @@ class MovaVacuum extends IPSModule
             '/dreame-user-iot/iotdevice/info',
             '{"did":""}'
         );
+    }
+
+    public function TestMiioHandshake()
+    {
+        $ip = trim($this->ReadPropertyString('LocalIP'));
+
+        if ($ip === '') {
+            throw new Exception('Keine lokale IP gesetzt');
+        }
+
+        $port = 54321;
+
+        $this->Log('MiIO Handshake an ' . $ip . ':' . $port);
+
+        $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+
+        if ($socket === false) {
+            throw new Exception('Socket konnte nicht erstellt werden');
+        }
+
+        socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, [
+            'sec' => 3,
+            'usec' => 0
+        ]);
+
+        // Standard MiIO Hello Packet
+        $packet = hex2bin(
+            '21310020ffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+        );
+
+        socket_sendto(
+            $socket,
+            $packet,
+            strlen($packet),
+            0,
+            $ip,
+            $port
+        );
+
+        $this->Log('MiIO Hello gesendet');
+
+        $from = '';
+        $recvPort = 0;
+        $buffer = '';
+
+        $bytes = @socket_recvfrom(
+            $socket,
+            $buffer,
+            4096,
+            0,
+            $from,
+            $recvPort
+        );
+
+        socket_close($socket);
+
+        if ($bytes === false || $bytes <= 0) {
+            $this->Log('Keine Antwort vom Gerät');
+            return false;
+        }
+
+        $hex = strtoupper(bin2hex($buffer));
+
+        $this->Log('Antwort von ' . $from . ':' . $recvPort);
+        $this->Log('Bytes: ' . $bytes);
+        $this->Log('HEX: ' . $hex);
+
+        $this->SetValueSafe('LastResponse', $hex);
+
+        return true;
     }
 
     private function HttpGet(string $url): string
