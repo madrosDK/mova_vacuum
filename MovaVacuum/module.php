@@ -137,7 +137,7 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyString('ExplorerPayload', '{"did":"","model":[{"siid":2,"piid":1},{"siid":3,"piid":1},{"siid":4,"piid":2},{"siid":4,"piid":3}]}');
 
 
-        
+
 
         $this->RegisterAttributeString('AccessToken', '');
         $this->RegisterAttributeString('RefreshToken', '');
@@ -653,9 +653,11 @@ class MovaVacuum extends IPSModule
             CURLOPT_POSTFIELDS => $data ?? '',
             CURLOPT_ENCODING => '',
 
-            // 🔥 FASTCOMMAND FIX (entscheidend)
+            // 🔥 MOVA fastCommand SSL Fix
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => 0,
+
+            // 🔥 wichtig für Ali IoT
             CURLOPT_SSLVERSION => CURL_SSLVERSION_TLSv1_2,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         ]);
