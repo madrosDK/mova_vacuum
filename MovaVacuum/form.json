@@ -92,67 +92,6 @@
     },
     {
       "type": "ExpansionPanel",
-      "caption": "Xiaomi / MiIO Cloud Test",
-      "items": [
-        {
-          "type": "ValidationTextBox",
-          "name": "XiaomiUsername",
-          "caption": "Xiaomi/Mi Home E-Mail"
-        },
-        {
-          "type": "PasswordTextBox",
-          "name": "XiaomiPassword",
-          "caption": "Xiaomi/Mi Home Passwort"
-        },
-        {
-          "type": "Select",
-          "name": "XiaomiCountry",
-          "caption": "Xiaomi Region",
-          "options": [
-            {
-              "caption": "Deutschland / EU (de)",
-              "value": "de"
-            },
-            {
-              "caption": "China (cn)",
-              "value": "cn"
-            }
-          ]
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "XiaomiDeviceID",
-          "caption": "Xiaomi DID"
-        },
-        {
-          "type": "Button",
-          "caption": "Xiaomi Login testen",
-          "onClick": "MOVA_XiaomiLoginTest($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Xiaomi get_properties testen",
-          "onClick": "MOVA_XiaomiGetPropertiesTest($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Xiaomi Start testen",
-          "onClick": "MOVA_XiaomiStartTest($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Xiaomi Pause testen",
-          "onClick": "MOVA_XiaomiPauseTest($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Xiaomi Dock testen",
-          "onClick": "MOVA_XiaomiDockTest($id);"
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
       "caption": "FastCommand Explorer",
       "items": [
         {

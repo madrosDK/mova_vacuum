@@ -136,10 +136,6 @@ class MovaVacuum extends IPSModule
         $this->RegisterPropertyString('ExplorerPath', '/dreame-user-iot/iotuserdata/getDeviceData');
         $this->RegisterPropertyString('ExplorerPayload', '{"did":"","model":[{"siid":2,"piid":1},{"siid":3,"piid":1},{"siid":4,"piid":2},{"siid":4,"piid":3}]}');
 
-        $this->RegisterPropertyString('XiaomiUsername', '');
-        $this->RegisterPropertyString('XiaomiPassword', '');
-        $this->RegisterPropertyString('XiaomiCountry', 'de');
-        $this->RegisterPropertyString('XiaomiDeviceID', '');
 
         
 
@@ -149,8 +145,6 @@ class MovaVacuum extends IPSModule
         $this->RegisterAttributeString('DeviceRaw', '');
         $this->RegisterAttributeString('DiscoveredDevices', '[]');
         $this->RegisterAttributeString('LastDeviceID', '');
-        $this->RegisterAttributeString('MiioAuthKey', '');
-        $this->RegisterAttributeString('MiioClientID', '');
 
         $this->RegisterTimer(self::TIMER_UPDATE, 0, 'MOVA_Update($_IPS[\'TARGET\']);');
     }
@@ -1137,25 +1131,6 @@ class MovaVacuum extends IPSModule
         $this->SendDebug('MOVA', $message, 0);
     }
 
-    public function TestFastCommand(string $method)
-    {
-        $did = $this->GetDeviceID();
-
-        $payload = [
-            'did' => $did,
-            'id' => time(),
-            'data' => [
-                'did' => $did,
-                'id' => time(),
-                'method' => $method,
-                'params' => []
-            ]
-        ];
-
-        $result = $this->ApiCall($this->CommandPath(), $payload, true);
-        $this->SetValueSafe('LastResponse', $this->Encode($result));
-        return $result;
-    }
     public function TestFastProperties()
     {
         $did = $this->GetDeviceID();
@@ -1252,57 +1227,24 @@ class MovaVacuum extends IPSModule
         }
     }
 
-
-
-    
-        $cloud = new MovaMiioCloud($username, $password, $country, $clientId);
-
-        $authKey = $this->ReadAttributeString('MiioAuthKey');
-        if ($authKey !== '') {
-            $cloud->setAuthKey($authKey);
-        }
-
-        return $cloud;
-    }
-
-    
-        return $this->GetDeviceID();
-    }
-
-    
-            $this->SetValueSafe('LastResponse', $this->Encode($safe));
-            return true;
-        } catch (Exception $e) {
-            $this->HandleException('Xiaomi Login Test', $e);
-            return false;
-        }
-    }
-
-        }
-
-    
-    
-    
-        }
-
-
     public function TestFastCommand()
     {
         try {
-
             $method = trim($this->ReadPropertyString('TestMethod'));
-            $params = json_decode($this->ReadPropertyString('TestParams'), true);
+            $jsonParams = trim($this->ReadPropertyString('TestParams'));
 
-            if (!is_array($params)) {
-                $params = [];
+            if ($method === '') {
+                throw new Exception('Bitte eine Methode eintragen.');
+            }
+
+            $params = $jsonParams === '' ? [] : json_decode($jsonParams, true);
+            if ($params === null && strtolower($jsonParams) !== 'null') {
+                throw new Exception('Params JSON ist ungueltig.');
             }
 
             $result = $this->SendRpc($method, $params);
-
             $this->SetValueSafe('LastResponse', $this->Encode($result));
-
             return $result;
-
         } catch (Exception $e) {
             $this->HandleException('FastCommand Test', $e);
             return false;
