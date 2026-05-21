@@ -1171,13 +1171,9 @@ class MovaVacuum extends IPSModule
 
             $payload = [
                 'did' => $did,
-                'id' => time(),
-                'data' => [
-                    'did' => $did,
-                    'id' => time(),
-                    'method' => $method,
-                    'params' => $params
-                ]
+                'id' => $id,
+                'method' => $method,
+                'params' => $normalizedParams,
             ];
 
             $result = $this->HttpRequest(
