@@ -45,6 +45,21 @@
           "type": "ValidationTextBox",
           "name": "DeviceID",
           "caption": "Device-ID"
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "LocalIP",
+          "caption": "Lokale IP"
+        },
+        {
+          "type": "Button",
+          "caption": "MiIO Handshake testen",
+          "onClick": "MOVA_TestMiioHandshake($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Lokale Ports testen",
+          "onClick": "MOVA_TestLocalPorts($id);"
         }
       ]
     },
@@ -111,7 +126,38 @@
           "caption": "Modellfilter optional"
         }
       ]
-    }
+    },
+    {
+    "type": "ExpansionPanel",
+    "caption": "ReadOnly Explorer",
+    "items": [
+      {
+        "type": "Button",
+        "caption": "Reinigungshistorie testen",
+        "onClick": "MOVA_TestCleaningHistory($id);"
+      },
+      {
+        "type": "Button",
+        "caption": "Task-Liste testen",
+        "onClick": "MOVA_TestTaskList($id);"
+      },
+      {
+        "type": "Button",
+        "caption": "Kartenliste testen",
+        "onClick": "MOVA_TestMapList($id);"
+      },
+      {
+        "type": "Button",
+        "caption": "Device-Status testen",
+        "onClick": "MOVA_TestDeviceStatus($id);"
+      },
+      {
+        "type": "Button",
+        "caption": "Device-Info testen",
+        "onClick": "MOVA_TestDeviceInfo($id);"
+      }
+    ]
+  }
   ],
   "actions": [
     {
