@@ -117,7 +117,7 @@ class MovaVacuum extends IPSModule
     {
         parent::Create();
 
-        $this->RegisterPropertyString('LocalIP', '');
+        
 
         $this->RegisterPropertyString('Username', '');
         $this->RegisterPropertyString('Password', '');
@@ -166,48 +166,23 @@ class MovaVacuum extends IPSModule
         $this->RegisterProfileIntegerText('MOVA.Maintenance', ' %');
 
         $this->RegisterVariableString('DeviceName', 'Geraet', '', 0);
-        $this->RegisterVariableString('DeviceIDText', 'Device-ID', '', 1);
-        $this->RegisterVariableString('DeviceModel', 'Modell', '', 2);
         $this->RegisterVariableString('Firmware', 'Firmware', '', 3);
         $this->RegisterVariableString('SerialNumber', 'Seriennummer', '', 4);
         $this->RegisterVariableString('MacAddress', 'MAC-Adresse', '', 5);
-        $this->RegisterVariableString('ProductID', 'Produkt-ID', '', 6);
-        $this->RegisterVariableString('BindDomain', 'Cloud-Bind-Domain', '', 7);
-        $this->RegisterVariableString('FeatureCodes', 'Feature-Codes', '', 8);
-        $this->RegisterVariableString('IconUrl', 'Icon-URL', '', 9);
-        $this->RegisterVariableString('KeyDefineUrl', 'KeyDefine-URL', '', 10);
 
         $this->RegisterVariableBoolean('Online', 'Online', '~Switch', 11);
         $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 12);
         $this->RegisterVariableString('StateCode', 'Status');
         
-        $this->RegisterVariableString('VideoStatusText', 'Video/Kamera', '', 15);
-        $this->RegisterVariableInteger('VideoStatusCode', 'Video-Status-Code', '', 16);
-        $this->RegisterVariableString('VideoOperation', 'Video-Operation', '', 17);
 
-        $this->RegisterVariableString('CloudStatus', 'Cloud-Status', '', 18);
-        $this->RegisterVariableString('Vendor', 'Vendor', '', 19);
-        $this->RegisterVariableString('SharedStatus', 'Shared-Status', '', 20);
-        $this->RegisterVariableString('DeviceTimes', 'Geraetezeiten', '', 21);
 
-        $this->RegisterVariableString('RawConfigData', 'getDeviceData Konfiguration', '', 40);
         $this->RegisterVariableString('LastResponse', 'Letzte Antwort', '', 50);
 
-        $this->RegisterVariableString('IoTId', 'IoT-ID');
-        $this->RegisterVariableInteger('LWT', 'LWT');
 
-        $this->RegisterVariableInteger('FeatureCode', 'FeatureCode');
-        $this->RegisterVariableInteger('FeatureCode2', 'FeatureCode2');
 
-        $this->RegisterVariableString('QuickConnects', 'QuickConnects');
 
-        $this->RegisterVariableString('VideoOperation', 'Video Operation');
-        $this->RegisterVariableString('VideoOperType', 'Video OperType');
 
-        $this->RegisterVariableInteger('VideoResult', 'Video Result');
-        $this->RegisterVariableInteger('VideoStatusCode', 'Video Status Code');
 
-        $this->RegisterVariableString('FeatureFlags', 'Feature Flags');
 
         $this->SyncSelectedDevice();
 
@@ -753,7 +728,6 @@ class MovaVacuum extends IPSModule
         }
 
         $this->WriteAttributeString('LastDeviceID', $selected);
-        $this->SetValueSafe('DeviceIDText', $selected);
     }
 
     private function GetDiscoveredDevices(): array
@@ -862,7 +836,6 @@ class MovaVacuum extends IPSModule
             }
 
             if ($config !== []) {
-                $this->SetValueSafe('RawConfigData', $this->Encode($config));
             }
         }
 
@@ -905,14 +878,10 @@ class MovaVacuum extends IPSModule
 
         $property = json_decode($device['property'] ?? '{}', true);
 
-        $this->SetValueSafe('IoTId', (string)($property['iotId'] ?? ''));
-        $this->SetValueSafe('LWT', (int)($property['lwt'] ?? 0));
 
-        $this->SetValueSafe('FeatureCode', (int)($device['featureCode'] ?? 0));
 
         $featureCode2 = (int)($device['featureCode2'] ?? 0);
 
-        $this->SetValueSafe('FeatureCode2', $featureCode2);
 
         $this->SetValueSafe(
             'FeatureFlags',
@@ -924,30 +893,20 @@ class MovaVacuum extends IPSModule
             $this->Encode($deviceInfo['quickConnects'] ?? [])
         );
 
-        $this->SetValueSafe('DeviceName', $this->DeviceCaption($device));
-        $this->SetValueSafe('DeviceIDText', $did);
-        $this->SetValueSafe('DeviceModel', (string)($device['model'] ?? ($deviceInfo['model'] ?? '')));
+        $this->SetValueSafe('DeviceName', (string)($device['deviceInfo']['displayName'] ?? $device['customName'] ?? $device['model'] ?? ''));
         $this->SetValueSafe('Firmware', (string)($device['ver'] ?? ($device['firmwareVersion'] ?? '')));
         $this->SetValueSafe('SerialNumber', (string)($device['sn'] ?? ($device['serialNumber'] ?? '')));
         $this->SetValueSafe('MacAddress', (string)($device['mac'] ?? ($device['macAddress'] ?? '')));
-        $this->SetValueSafe('ProductID', (string)($deviceInfo['productId'] ?? ($device['productId'] ?? ($device['product_id'] ?? ''))));
-        $this->SetValueSafe('BindDomain', (string)($device['bindDomain'] ?? ''));
-        $this->SetValueSafe('Vendor', (string)($device['vendor'] ?? ''));
-        $this->SetValueSafe('CloudStatus', (string)($deviceInfo['status'] ?? ''));
-        $this->SetValueSafe('SharedStatus', (string)($device['sharedStatus'] ?? ''));
 
         $imageUrl = (string)($deviceInfo['mainImage']['imageUrl'] ?? $deviceInfo['icon']['imageUrl'] ?? $device['icon'] ?? $device['image'] ?? '');
-        $this->SetValueSafe('IconUrl', $imageUrl);
 
         $keyDefineUrl = (string)($device['keyDefine']['url'] ?? $device['keyDefineUrl'] ?? '');
-        $this->SetValueSafe('KeyDefineUrl', $keyDefineUrl);
         if ($keyDefineUrl !== '') {
             $this->EnsureStatusMap($keyDefineUrl);
         }
 
         $features = $device['featureCodes'] ?? $device['featureCode'] ?? $deviceInfo['feature'] ?? $device['feature'] ?? null;
         if ($features !== null) {
-            $this->SetValueSafe('FeatureCodes', is_array($features) ? implode(', ', array_map('strval', $features)) : (string)$features);
         }
 
         $this->SetValueSafe('Online', (bool)($device['online'] ?? false));
@@ -970,12 +929,8 @@ class MovaVacuum extends IPSModule
 
         $video = json_decode($device['videoStatus'] ?? '{}', true);
 
-        $this->SetValueSafe('VideoOperation', (string)($video['operation'] ?? ''));
-        $this->SetValueSafe('VideoOperType', (string)($video['operType'] ?? ''));
 
-        $this->SetValueSafe('VideoResult', (int)($video['result'] ?? 0));
 
-        $this->SetValueSafe('VideoStatusCode', (int)($video['status'] ?? 0));
 
         $times = [
             'updateTime' => $device['updateTime'] ?? '',
@@ -983,7 +938,6 @@ class MovaVacuum extends IPSModule
             'createTime' => $this->FormatTimestampMs($device['createTime'] ?? null),
             'releaseAt' => $this->FormatTimestampMs($deviceInfo['releaseAt'] ?? null),
         ];
-        $this->SetValueSafe('DeviceTimes', $this->Encode($times));
 
         if (array_key_exists('online', $device) && !$device['online']) {
             $this->SetValueSafe('ErrorText', 'Offline');
@@ -1110,7 +1064,6 @@ class MovaVacuum extends IPSModule
 
     private function ParseVideoStatus($videoStatus): void
     {
-        $this->SetValueSafe('VideoStatusText', 'Unbekannt');
 
         if (!is_string($videoStatus) || $videoStatus === '') {
             return;
@@ -1118,7 +1071,6 @@ class MovaVacuum extends IPSModule
 
         $decoded = json_decode($videoStatus, true);
         if (!is_array($decoded)) {
-            $this->SetValueSafe('VideoStatusText', $videoStatus);
             return;
         }
 
@@ -1127,8 +1079,6 @@ class MovaVacuum extends IPSModule
         $operation = (string)($decoded['operation'] ?? '');
         $operType = (string)($decoded['operType'] ?? '');
 
-        $this->SetValueSafe('VideoStatusCode', $status);
-        $this->SetValueSafe('VideoOperation', trim($operation . ' / ' . $operType, ' /'));
 
         if ($status === 0 && $operType === 'end') {
             $text = 'Beendet';
@@ -1144,221 +1094,11 @@ class MovaVacuum extends IPSModule
             $text .= ' (' . $operation . ')';
         }
 
-        $this->SetValueSafe('VideoStatusText', $text);
     }
 
-    public function TestEndpoint(string $path, string $payloadJson = '{}')
-    {
-        try {
-            $payload = json_decode($payloadJson, true);
 
-            if ($payload === null && trim($payloadJson) !== 'null') {
-                throw new Exception('Ungültiges JSON Payload');
-            }
 
-            if (!is_array($payload)) {
-                $payload = [];
-            }
 
-            if (!isset($payload['did']) || $payload['did'] === '') {
-                $payload['did'] = $this->GetDeviceID();
-            }
-
-            $result = $this->ApiCall($path, $payload, true);
-
-            $this->SetValueSafe('LastResponse', $this->Encode([
-                'path' => $path,
-                'payload' => $payload,
-                'result' => $result
-            ]));
-
-            return $result;
-
-        } catch (Exception $e) {
-            $this->HandleException('Endpoint Test', $e);
-            return false;
-        }
-    }
-
-    public function TestCleaningHistory()
-    {
-        return $this->TestEndpoint(
-            '/dreame-user-iot/cleanRecord/list',
-            '{"did":"","current":1,"size":20}'
-        );
-    }
-
-    public function TestTaskList()
-    {
-        return $this->TestEndpoint(
-            '/dreame-user-iot/task/list',
-            '{"did":"","current":1,"size":20}'
-        );
-    }
-
-    public function TestMapList()
-    {
-        return $this->TestEndpoint(
-            '/dreame-user-iot/map/list',
-            '{"did":""}'
-        );
-    }
-
-    public function TestDeviceStatus()
-    {
-        return $this->TestEndpoint(
-            '/dreame-user-iot/iotdevice/status',
-            '{"did":""}'
-        );
-    }
-
-    public function TestDeviceInfo()
-    {
-        return $this->TestEndpoint(
-            '/dreame-user-iot/iotdevice/info',
-            '{"did":""}'
-        );
-    }
-
-    public function TestMiioHandshake()
-    {
-        $ip = trim($this->ReadPropertyString('LocalIP'));
-
-        if ($ip === '') {
-            throw new Exception('Keine lokale IP gesetzt');
-        }
-
-        $port = 54321;
-
-        $this->Log('MiIO Handshake an ' . $ip . ':' . $port);
-
-        $socket = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-
-        if ($socket === false) {
-            throw new Exception('Socket konnte nicht erstellt werden');
-        }
-
-        socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, [
-            'sec' => 3,
-            'usec' => 0
-        ]);
-
-        // Standard MiIO Hello Packet
-        $packet = hex2bin(
-            '21310020ffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-        );
-
-        socket_sendto(
-            $socket,
-            $packet,
-            strlen($packet),
-            0,
-            $ip,
-            $port
-        );
-
-        $this->Log('MiIO Hello gesendet');
-
-        $from = '';
-        $recvPort = 0;
-        $buffer = '';
-
-        $bytes = @socket_recvfrom(
-            $socket,
-            $buffer,
-            4096,
-            0,
-            $from,
-            $recvPort
-        );
-
-        socket_close($socket);
-
-        if ($bytes === false || $bytes <= 0) {
-            $this->Log('Keine Antwort vom Gerät');
-            return false;
-        }
-
-        $hex = strtoupper(bin2hex($buffer));
-
-        $this->Log('Antwort von ' . $from . ':' . $recvPort);
-        $this->Log('Bytes: ' . $bytes);
-        $this->Log('HEX: ' . $hex);
-
-        $this->SetValueSafe('LastResponse', $hex);
-
-        return true;
-    }
-
-    public function TestLocalPorts()
-    {
-        $ip = trim($this->ReadPropertyString('LocalIP'));
-
-        if ($ip === '') {
-            throw new Exception('Keine lokale IP gesetzt');
-        }
-
-        $ports = [
-            23,
-            53,
-            80,
-            443,
-            8000,
-            8080,
-            54321,
-            54322,
-            6668,
-            1883,
-            8883
-        ];
-
-        $result = [];
-
-        foreach ($ports as $port) {
-
-            $this->Log('Teste Port ' . $port);
-
-            $errno = 0;
-            $errstr = '';
-
-            $fp = @fsockopen(
-                $ip,
-                $port,
-                $errno,
-                $errstr,
-                1.5
-            );
-
-            if ($fp) {
-
-                fclose($fp);
-
-                $this->Log('Port OFFEN: ' . $port);
-
-                $result[] = [
-                    'port' => $port,
-                    'open' => true
-                ];
-
-            } else {
-
-                $this->Log('Port geschlossen: ' . $port);
-
-                $result[] = [
-                    'port' => $port,
-                    'open' => false,
-                    'error' => $errstr
-                ];
-            }
-        }
-
-        $this->SetValueSafe(
-            'LastResponse',
-            $this->Encode($result)
-        );
-
-        return true;
-    }
 
     private function HttpGet(string $url): string
     {
