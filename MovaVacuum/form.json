@@ -3,6 +3,82 @@
     {
       "type": "Label",
       "label": "MOVA Vacuum ReadOnly (MOVAhome / P50 Pro Ultra)"
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Zugangsdaten",
+      "items": [
+        {
+          "type": "ValidationTextBox",
+          "name": "Username",
+          "caption": "E-Mail"
+        },
+        {
+          "type": "PasswordTextBox",
+          "name": "Password",
+          "caption": "Passwort"
+        },
+        {
+          "type": "Select",
+          "name": "Region",
+          "caption": "Region",
+          "options": [
+            {
+              "caption": "EU",
+              "value": "eu"
+            },
+            {
+              "caption": "CN",
+              "value": "cn"
+            },
+            {
+              "caption": "US",
+              "value": "us"
+            },
+            {
+              "caption": "SG",
+              "value": "sg"
+            }
+          ]
+        },
+        {
+          "type": "ValidationTextBox",
+          "name": "DeviceID",
+          "caption": "Device-ID"
+        }
+      ]
+    },
+    {
+      "type": "ExpansionPanel",
+      "caption": "Aktualisierung",
+      "items": [
+        {
+          "type": "NumberSpinner",
+          "name": "UpdateInterval",
+          "caption": "Aktualisierungsintervall (Sekunden)",
+          "minimum": 0
+        },
+        {
+          "type": "CheckBox",
+          "name": "UseMD5Password",
+          "caption": "MOVA Passwort mit Salt/MD5 verwenden"
+        },
+        {
+          "type": "CheckBox",
+          "name": "Debug",
+          "caption": "Debug aktivieren"
+        },
+        {
+          "type": "Button",
+          "caption": "Login + Geräte suchen",
+          "onClick": "MOVA_LoginAndDiscover($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Status aktualisieren",
+          "onClick": "MOVA_Refresh($id);"
+        }
+      ]
     }
   ],
   "actions": [
