@@ -298,18 +298,7 @@ class MovaVacuum extends IPSModule
         }
     }
 
-    public function TestDefaultProperties()
-    {
-        try {
-            $result = $this->GetProperties($this->DefaultPropertyRequests());
-            $this->SetValueSafe('LastResponse', $this->Encode($result));
-            $this->ParseProperties($result);
-            return $result;
-        } catch (Exception $e) {
-            $this->HandleException('Default Properties testen', $e);
-            return false;
-        }
-    }
+
 
     public function Refresh()
     {

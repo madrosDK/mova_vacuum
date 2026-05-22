@@ -1,9 +1,9 @@
 {
   "id": "{7F6B3F61-4F9A-4B3E-8B7E-0D2A6B3F8C51}",
-  "author": "Madrax / ChatGPT",
+  "author": "madrosDK",
   "name": "MOVA Vacuum",
   "url": "https://github.com/madrosDK/mova_vacuum",
-  "version": "0.6",
-  "build": 7,
+  "version": "1.0",
+  "build": 1,
   "date": 1779364800
 }
