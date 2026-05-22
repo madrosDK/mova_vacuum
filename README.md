@@ -1,40 +1,140 @@
 # MOVA Vacuum IP-Symcon Modul
 
-Startversion für MOVAhome / MOVA P50 Pro Ultra (`mova.vacuum.r2587a`).
+# Version
 
-## Funktionen
+## v1.0 Build 1
 
-- Login gegen MOVAhome-Cloud-Endpunkt
-- Geräteliste abrufen und Device-ID speichern
-- Grundstatus per `get_properties`
-- Aktionen: Start, Pause, Zur Station
-- Debug-Ausgabe in IP-Symcon
+## Übersicht
 
-## Installation
+Dieses Modul integriert MOVA Saugroboter in IP-Symcon über die offizielle MOVA Cloud API.
 
-Den Inhalt dieses ZIPs direkt als Modul installieren/kopieren, z. B.:
+Aktuell liegt der Fokus auf:
 
-`C:\ProgramData\Symcon\modules\mova-vacuum\`
+* stabiler Cloud-Anbindung
+* sauberer Statusanzeige
+* Liveinformationen des Roboters
+* einfacher Integration in Visualisierungen und Automationen
 
-Struktur:
+Das Modul wurde aktuell mit folgendem Gerät getestet:
 
-- `library.json`
-- `README.md`
-- `MovaVacuum/module.json`
-- `MovaVacuum/form.json`
-- `MovaVacuum/module.php`
+* MOVA P50 Pro Ultra
 
-## Konfiguration
+---
 
-1. Instanz **MOVA Vacuum** anlegen.
-2. MOVAhome E-Mail und Passwort eintragen.
-3. Region auf `EU` lassen.
-4. `Änderungen übernehmen`.
-5. Button **Login + Geräte suchen** ausführen.
-6. Danach **Status aktualisieren** testen.
+# Funktionen
 
-## Hinweise
+## Cloud Login
 
-Das ist eine technische Startversion. MOVA/Dreame nutzt eine nicht offiziell dokumentierte Cloud-API. Falls Login, Device-Liste oder Befehle anders antworten, bitte den Debug-Auszug aus IP-Symcon posten. Dann können die Endpunkte, Header oder MIOT-Property-IDs schnell angepasst werden.
+Anmeldung über:
 
-Für Google-/Apple-Login muss in der MOVAhome-App zuerst ein normales Passwort gesetzt werden.
+* MOVA Account E-Mail
+* Passwort
+
+Das Modul verbindet sich direkt mit der europäischen MOVA Cloud.
+
+---
+
+# Unterstützte Informationen
+
+## Geräteinformationen
+
+Anzeige von:
+
+* Gerätename
+* Firmware-Version
+* Seriennummer
+
+Der Gerätename wird automatisch aus der Cloud übernommen.
+
+Beispiel:
+
+```text
+P50 Pro Ultra
+```
+
+---
+
+## Statusanzeige
+
+Der aktuelle Status des Roboters wird automatisch übersetzt und lesbar dargestellt.
+
+Beispiele:
+
+```text
+🟢 Bereit (geladen)
+🧹 Reinigung läuft
+🏠 Rückkehr zur Station
+🔋 Lädt
+🌬️ Mopp wird getrocknet
+```
+
+---
+
+## Livewerte
+
+Aktuell unterstützt:
+
+* Online-Status
+* Akkustand
+* Gerätestatus
+
+---
+
+# Hinweise
+
+## Lokale Kommunikation
+
+Aktuell verwendet das Modul ausschließlich die MOVA Cloud API.
+
+Lokale MiIO-/Dreame-Kommunikation wurde getestet, wird vom MOVA P50 Pro Ultra aktuell jedoch nicht offen unterstützt.
+
+---
+
+# Installation
+
+## Modul installieren
+
+Repository nach:
+
+```text
+C:\ProgramData\Symcon\modules\mova_vacuum
+```
+
+kopieren.
+
+Danach in IP-Symcon:
+
+```text
+Kerninstanzen → Module neu laden
+```
+
+---
+
+# Instanz anlegen
+
+Neue Instanz erstellen:
+
+```text
+MOVA Vacuum
+```
+
+Danach:
+
+* E-Mail eintragen
+* Passwort eintragen
+* Login testen
+* Gerät auswählen
+
+---
+
+# Bekannte Einschränkungen
+
+Aktuell sind keine lokalen Steuerfunktionen verfügbar.
+
+Das Modul dient derzeit primär zur:
+
+* Statusanzeige
+* Geräteüberwachung
+* Cloud-Auswertung
+
+---

@@ -2,42 +2,49 @@
   "elements": [
     {
       "type": "Label",
-      "label": "MOVAhome Cloud Modul - Testversion fuer MOVA P50 Pro Ultra (mova.vacuum.r2587a)"
+      "label": "MOVA Vacuum ReadOnly (MOVAhome / P50 Pro Ultra)"
     },
     {
       "type": "ExpansionPanel",
-      "caption": "MOVAhome Zugang",
+      "caption": "Zugangsdaten",
       "items": [
         {
           "type": "ValidationTextBox",
           "name": "Username",
-          "caption": "MOVAhome E-Mail"
+          "caption": "E-Mail"
         },
         {
           "type": "PasswordTextBox",
           "name": "Password",
-          "caption": "MOVAhome Passwort"
+          "caption": "Passwort"
         },
         {
           "type": "Select",
           "name": "Region",
           "caption": "Region",
           "options": [
-            { "caption": "EU", "value": "eu" },
-            { "caption": "CN", "value": "cn" },
-            { "caption": "US", "value": "us" },
-            { "caption": "SG", "value": "sg" }
+            {
+              "caption": "EU",
+              "value": "eu"
+            },
+            {
+              "caption": "CN",
+              "value": "cn"
+            },
+            {
+              "caption": "US",
+              "value": "us"
+            },
+            {
+              "caption": "SG",
+              "value": "sg"
+            }
           ]
         },
         {
           "type": "ValidationTextBox",
           "name": "DeviceID",
-          "caption": "Device-ID / did (leer = Geraeteliste verwenden)"
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "Model",
-          "caption": "Modellfilter"
+          "caption": "Device-ID"
         }
       ]
     },
@@ -53,34 +60,23 @@
         },
         {
           "type": "CheckBox",
-          "name": "Debug",
-          "caption": "Debug in IPS_LogMessage"
-        }
-      ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Erweitert",
-      "items": [
-        {
-          "type": "ValidationTextBox",
-          "name": "BaseUrl",
-          "caption": "Basis-URL ueberschreiben (leer = automatisch)"
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "AuthBasic",
-          "caption": "Authorization Basic Token"
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "TenantId",
-          "caption": "Tenant-ID"
+          "name": "UseMD5Password",
+          "caption": "MOVA Passwort mit Salt/MD5 verwenden"
         },
         {
           "type": "CheckBox",
-          "name": "UseMD5Password",
-          "caption": "Passwort als MD5 senden (Testoption)"
+          "name": "Debug",
+          "caption": "Debug aktivieren"
+        },
+        {
+          "type": "Button",
+          "caption": "Login + Geräte suchen",
+          "onClick": "MOVA_LoginAndDiscover($id);"
+        },
+        {
+          "type": "Button",
+          "caption": "Status aktualisieren",
+          "onClick": "MOVA_Refresh($id);"
         }
       ]
     }
@@ -88,70 +84,30 @@
   "actions": [
     {
       "type": "Button",
-      "caption": "Login + Geraete suchen",
-      "onClick": "MOVA_LoginAndDiscover($id);"
-    },
-    {
-      "type": "Button",
       "caption": "Status aktualisieren",
-      "onClick": "MOVA_Update($id);"
-    },
-    {
-      "type": "RowLayout",
-      "items": [
-        {
-          "type": "Button",
-          "caption": "Start",
-          "onClick": "MOVA_Start($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Pause",
-          "onClick": "MOVA_Pause($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Stop",
-          "onClick": "MOVA_Stop($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Zur Station",
-          "onClick": "MOVA_Dock($id);"
-        }
-      ]
-    },
-    {
-      "type": "RowLayout",
-      "items": [
-        {
-          "type": "Button",
-          "caption": "Roboter suchen",
-          "onClick": "MOVA_Locate($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Warnung loeschen",
-          "onClick": "MOVA_ClearWarning($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Auto-Entleerung",
-          "onClick": "MOVA_StartAutoEmpty($id);"
-        }
-      ]
+      "onClick": "MOVA_Refresh($id);"
     }
   ],
   "status": [
     {
       "code": 101,
       "icon": "inactive",
-      "caption": "Keine Zugangsdaten konfiguriert"
+      "caption": "Instanz wird erstellt"
     },
     {
       "code": 102,
+      "icon": "active",
+      "caption": "Aktiv"
+    },
+    {
+      "code": 104,
+      "icon": "inactive",
+      "caption": "Zugangsdaten fehlen"
+    },
+    {
+      "code": 201,
       "icon": "error",
-      "caption": "Login/Cloud Fehler - Debug pruefen"
+      "caption": "Fehler (Debug prüfen)"
     }
   ]
 }

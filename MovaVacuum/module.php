@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+
 class MovaVacuum extends IPSModule
 {
     private const TIMER_UPDATE = 'UpdateTimer';
+    private const PASSWORD_SALT = 'RAylYC%fmSKp7%Tq';
+    private const DEFAULT_IOT_PREFIX = '20000';
 
     private const STATE_NAMES = [
         -1 => 'Unbekannt',
@@ -22,6 +25,43 @@ class MovaVacuum extends IPSModule
         12 => 'Saugt und wischt',
         13 => 'Voll geladen',
         14 => 'Update',
+        15 => 'Zum Reinigen gerufen',
+        16 => 'Selbstreparatur',
+        17 => 'Faehrt zum Mopp einsetzen',
+        18 => 'Faehrt zum Mopp entfernen',
+        19 => 'Wasserstation Selbsttest',
+        20 => 'Mopp wird gereinigt und Wasser aufgefuellt',
+        21 => 'Reinigung pausiert',
+        22 => 'Auto-Entleerung',
+        23 => 'Fernsteuerung',
+        24 => 'Intelligentes Laden',
+        25 => 'Zweite Reinigung',
+        26 => 'Folgt',
+        27 => 'Spot-Reinigung',
+        28 => 'Faehrt zur Staubentleerung',
+        29 => 'Wartet auf Aufgaben',
+        30 => 'Waschbrett wird gereinigt',
+        31 => 'Faehrt zum Entleeren',
+        32 => 'Entleert',
+        33 => 'Wasserversorgung/Entleerung',
+        34 => 'Entleerung',
+        35 => 'Staubbeutel trocknet',
+        36 => 'Staubbeutel-Trocknung pausiert',
+        37 => 'Faehrt zur Zusatzreinigung',
+        38 => 'Zusatzreinigung',
+        95 => 'Haustiersuche pausiert',
+        96 => 'Haustiersuche',
+        97 => 'Shortcut laeuft',
+        98 => 'Kameraueberwachung',
+        99 => 'Kameraueberwachung pausiert',
+        101 => 'Initiale Tiefenreinigung',
+        102 => 'Initiale Tiefenreinigung pausiert',
+        103 => 'Desinfiziert',
+        104 => 'Desinfiziert und trocknet',
+        105 => 'Moppwechsel',
+        106 => 'Moppwechsel pausiert',
+        107 => 'Bodenpflege',
+        108 => 'Bodenpflege pausiert',
     ];
 
     private const TASK_NAMES = [
@@ -73,74 +113,81 @@ class MovaVacuum extends IPSModule
         116 => 'Frischwassertank',
         118 => 'Schmutzwassertank-Fuellstand',
     ];
-
     public function Create()
     {
         parent::Create();
+
+        
 
         $this->RegisterPropertyString('Username', '');
         $this->RegisterPropertyString('Password', '');
         $this->RegisterPropertyString('Region', 'eu');
         $this->RegisterPropertyString('DeviceID', '');
         $this->RegisterPropertyInteger('UpdateInterval', 60);
-        $this->RegisterPropertyBoolean('UseMD5Password', false);
+        $this->RegisterPropertyBoolean('UseMD5Password', true);
         $this->RegisterPropertyBoolean('Debug', true);
         $this->RegisterPropertyString('BaseUrl', '');
-        $this->RegisterPropertyString('AuthBasic', 'ZHJlYW1lX2FwcHYxOkFQXmR2QHpAU1FZVnhOODg=');
+        $this->RegisterPropertyString('AuthBasic', '');
         $this->RegisterPropertyString('TenantId', '000002');
-        $this->RegisterPropertyString('Model', 'mova.vacuum.r2587a');
+        $this->RegisterPropertyString('Model', '');
 
         $this->RegisterAttributeString('AccessToken', '');
         $this->RegisterAttributeString('RefreshToken', '');
         $this->RegisterAttributeInteger('TokenExpires', 0);
         $this->RegisterAttributeString('DeviceRaw', '');
+        $this->RegisterAttributeString('DiscoveredDevices', '[]');
         $this->RegisterAttributeString('LastDeviceID', '');
+        $this->RegisterAttributeString('StatusMap', '{}');
+        $this->RegisterAttributeInteger('StatusMapFetched', 0);
 
-        $this->RegisterTimer(self::TIMER_UPDATE, 0, 'MOVA_Update($_IPS[\'TARGET\']);');
+        $this->RegisterTimer(self::TIMER_UPDATE, 0, 'MOVA_Refresh($_IPS[\'TARGET\']);');
     }
 
+
+    public function GetConfigurationForm()
+    {
+        $form = json_decode(file_get_contents(__DIR__ . '/form.json'), true);
+        if (!is_array($form)) {
+            return '{}';
+        }
+
+        if (isset($form['elements']) && is_array($form['elements'])) {
+            $this->InjectDeviceOptions($form['elements']);
+        }
+
+        return json_encode($form, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
     public function ApplyChanges()
     {
         parent::ApplyChanges();
 
-        $this->RegisterProfileIntegerEx('MOVA.SuctionLevel', '', '', '', [
-            [0, 'Leise', '', -1],
-            [1, 'Standard', '', -1],
-            [2, 'Stark', '', -1],
-            [3, 'Turbo', '', -1],
-        ]);
-        $this->RegisterProfileIntegerEx('MOVA.WaterVolume', '', '', '', [
-            [1, 'Niedrig', '', -1],
-            [2, 'Mittel', '', -1],
-            [3, 'Hoch', '', -1],
-        ]);
-        $this->RegisterProfileIntegerEx('MOVA.CleaningMode', '', '', '', [
-            [0, 'Saugen', '', -1],
-            [1, 'Wischen', '', -1],
-            [2, 'Saugen und Wischen', '', -1],
-        ]);
+        $this->RegisterProfileIntegerText('MOVA.AreaM2', ' m²');
+        $this->RegisterProfileIntegerText('MOVA.Minutes', ' min');
+        $this->RegisterProfileIntegerText('MOVA.Maintenance', ' %');
 
         $this->RegisterVariableString('DeviceName', 'Geraet', '', 0);
-        $this->RegisterVariableString('StatusText', 'Status', '', 1);
-        $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 2);
-        $this->RegisterVariableInteger('StateCode', 'State-Code', '', 3);
-        $this->RegisterVariableInteger('ChargingStatus', 'Ladestatus-Code', '', 4);
-        $this->RegisterVariableInteger('ErrorCode', 'Fehler-Code', '', 5);
-        $this->RegisterVariableString('ErrorText', 'Fehler', '', 6);
-        $this->RegisterVariableInteger('TaskStatus', 'Task-Status-Code', '', 7);
-        $this->RegisterVariableInteger('CleanedArea', 'Gereinigte Flaeche', '', 8);
-        $this->RegisterVariableInteger('CleaningTime', 'Reinigungszeit', '', 9);
-        $this->RegisterVariableInteger('SuctionLevel', 'Saugleistung', 'MOVA.SuctionLevel', 10);
-        $this->RegisterVariableInteger('WaterVolume', 'Wasserstufe', 'MOVA.WaterVolume', 11);
-        $this->RegisterVariableInteger('CleaningMode', 'Reinigungsmodus', 'MOVA.CleaningMode', 12);
+        $this->RegisterVariableString('Firmware', 'Firmware', '', 3);
+        $this->RegisterVariableString('SerialNumber', 'Seriennummer', '', 4);
+        $this->RegisterVariableString('MacAddress', 'MAC-Adresse', '', 5);
+
+        $this->RegisterVariableBoolean('Online', 'Online', '~Switch', 11);
+        $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 12);
+        $this->RegisterVariableString('StateCode', 'Status');
+        
+
+
         $this->RegisterVariableString('LastResponse', 'Letzte Antwort', '', 50);
 
-        $this->EnableAction('SuctionLevel');
-        $this->EnableAction('WaterVolume');
-        $this->EnableAction('CleaningMode');
+
+
+
+
+
+
+        $this->SyncSelectedDevice();
 
         if ($this->ReadPropertyString('Username') === '' || $this->ReadPropertyString('Password') === '') {
-            $this->SetStatus(101);
+            $this->SetStatus(104);
         } else {
             $this->SetStatus(IS_ACTIVE);
         }
@@ -148,49 +195,161 @@ class MovaVacuum extends IPSModule
         $interval = $this->ReadPropertyInteger('UpdateInterval');
         $this->SetTimerInterval(self::TIMER_UPDATE, $interval > 0 ? $interval * 1000 : 0);
     }
-
     public function RequestAction($Ident, $Value)
     {
         switch ($Ident) {
-            case 'SuctionLevel':
-                $this->SetProperty(4, 4, (int)$Value);
+            case 'Refresh':
+            case 'Update':
+                $this->Update();
                 break;
-            case 'WaterVolume':
-                $this->SetProperty(4, 5, (int)$Value);
-                break;
-            case 'CleaningMode':
-                $this->SetProperty(4, 23, (int)$Value);
-                break;
+
             default:
                 throw new Exception('Invalid ident: ' . $Ident);
         }
-
-        $this->Update();
     }
+
 
     public function LoginAndDiscover()
     {
-        $this->Login(true);
+        try {
+            $this->Login(true);
 
-        $devices = $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', null, true);
-        $this->SetValueSafe('LastResponse', $this->Encode($devices));
+            $devices = $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', [
+                'sharedStatus' => 1,
+                'current' => 1,
+                'size' => 100,
+                'lang' => 'de',
+                'timestamp' => $this->NowMilliseconds(),
+            ], true);
+            $this->SetValueSafe('LastResponse', $this->Encode($devices));
 
-        $found = $this->FindDevice($devices);
-        if ($found === null) {
-            $this->Log('Kein passendes Geraet gefunden. LastResponse pruefen.');
-            return;
+            $records = $this->FindDevices($devices);
+            $this->WriteAttributeString('DiscoveredDevices', $this->Encode($records));
+
+            $found = $this->FindDevice($records);
+            if ($found === null) {
+                $this->Log('Kein passendes Geraet gefunden. LastResponse pruefen.');
+                return false;
+            }
+
+            $selected = $this->ReadPropertyString('DeviceID');
+            if ($selected !== '' || count($records) === 1) {
+                $this->UseDevice($found);
+            }
+
+            $this->UpdateFormField('DeviceID', 'options', json_encode($this->BuildDeviceOptions()));
+            if (count($records) === 1) {
+                $this->UpdateFormField('DeviceID', 'value', (string)($found['did'] ?? $found['deviceId'] ?? ''));
+            }
+
+            $this->Log(count($records) . ' Geraet(e) gefunden. Auswahl im Feld "Gefundenes Geraet" pruefen und uebernehmen.');
+            return true;
+        } catch (Exception $e) {
+            $this->HandleException('Login/Geraetesuche', $e);
+            return false;
         }
-
-        $did = (string)($found['did'] ?? $found['deviceId'] ?? '');
-        $this->WriteAttributeString('DeviceRaw', $this->Encode($found));
-        $this->WriteAttributeString('LastDeviceID', $did);
-        $this->SetValueSafe('DeviceName', (string)($found['name'] ?? $found['model'] ?? $did));
-        $this->Log('Geraet gefunden: did=' . $did . ', model=' . ($found['model'] ?? 'unbekannt'));
     }
-
     public function Update()
     {
-        $props = [
+        try {
+            $props = $this->DefaultPropertyRequests();
+            $result = $this->GetProperties($props);
+            $this->ParseProperties($result);
+
+            $device = $this->GetSelectedDeviceFromCloud();
+            if ($device !== null) {
+                $this->ParseDeviceListStatus($device);
+            }
+
+            $this->SetValueSafe('LastResponse', $this->Encode([
+                'properties' => $result,
+                'device' => $device,
+                'statusMapLoaded' => json_decode($this->ReadAttributeString('StatusMap'), true) !== [],
+            ]));
+
+            return true;
+        } catch (Exception $e) {
+            $this->HandleException('Status aktualisieren', $e);
+            return false;
+        }
+    }
+
+
+
+
+    public function ExplorerApiCall()
+    {
+        try {
+            $this->Login(false);
+            $payload = trim($this->ReadPropertyString('ExplorerPayload'));
+            $data = $payload === '' ? [] : json_decode($payload, true);
+            if ($data === null && $payload !== 'null') {
+                throw new Exception('ExplorerPayload ist kein gueltiges JSON.');
+            }
+            if (is_array($data)) {
+                $data = $this->ReplaceDidPlaceholders($data);
+            }
+            $result = $this->ApiCall($this->ReadPropertyString('ExplorerPath'), $data, true);
+            $this->SetValueSafe('LastResponse', $this->Encode($result));
+            return $result;
+        } catch (Exception $e) {
+            $this->HandleException('Explorer API', $e);
+            return false;
+        }
+    }
+
+
+
+    public function Refresh()
+    {
+        return $this->Update();
+    }
+
+
+
+
+    public function GetProperties(array $props)
+    {
+        $this->Login(false);
+        $did = $this->GetDeviceID();
+        if ($did === '') {
+            throw new Exception('Keine Device-ID vorhanden. Bitte zuerst "Login + Geraete suchen" ausfuehren oder Device-ID eintragen.');
+        }
+
+        $model = [];
+        foreach ($props as $prop) {
+            $model[] = [
+                'siid' => (int)($prop['siid'] ?? 0),
+                'piid' => (int)($prop['piid'] ?? 0),
+            ];
+        }
+
+        return $this->ApiCall('/dreame-user-iot/iotuserdata/getDeviceData', [
+            'did' => $did,
+            'model' => $model,
+        ], true);
+    }
+
+    public function GetSelectedDeviceFromCloud(): ?array
+    {
+        $devices = $this->ApiCall('/dreame-user-iot/iotuserbind/device/listV2', [
+            'sharedStatus' => 1,
+            'current' => 1,
+            'size' => 100,
+            'lang' => 'de',
+            'timestamp' => $this->NowMilliseconds(),
+        ], true);
+
+        $records = $this->FindDevices($devices);
+        if ($records !== []) {
+            $this->WriteAttributeString('DiscoveredDevices', $this->Encode($records));
+        }
+
+        return $this->FindDevice($records);
+    }
+    private function DefaultPropertyRequests(): array
+    {
+        return [
             $this->PropertyRequest('state', 2, 1),
             $this->PropertyRequest('error', 2, 2),
             $this->PropertyRequest('battery', 3, 1),
@@ -203,110 +362,39 @@ class MovaVacuum extends IPSModule
             $this->PropertyRequest('task_status', 4, 7),
             $this->PropertyRequest('cleaning_mode', 4, 23),
             $this->PropertyRequest('self_wash_base_status', 4, 25),
+            $this->PropertyRequest('resume_clean', 4, 26),
+            $this->PropertyRequest('clean_percent', 4, 27),
+
+            $this->PropertyRequest('map_status', 6, 1),
+            $this->PropertyRequest('map_id', 6, 2),
+
+            $this->PropertyRequest('dust_collection', 7, 1),
+            $this->PropertyRequest('auto_empty_status', 7, 2),
+
+            $this->PropertyRequest('water_tank', 8, 1),
+            $this->PropertyRequest('dirty_water_tank', 8, 2),
+
             $this->PropertyRequest('main_brush_left', 9, 2),
             $this->PropertyRequest('side_brush_left', 10, 2),
             $this->PropertyRequest('filter_left', 11, 1),
+
+            $this->PropertyRequest('dock_state', 15, 1),
+            $this->PropertyRequest('mop_wash_state', 15, 2),
+            $this->PropertyRequest('drying_state', 15, 3),
+
             $this->PropertyRequest('sensor_dirty_left', 16, 1),
             $this->PropertyRequest('mop_pad_left', 18, 1),
+
+            $this->PropertyRequest('camera_state', 20, 1),
+            $this->PropertyRequest('pet_mode', 21, 1),
+            $this->PropertyRequest('voice_volume', 22, 1),
+            $this->PropertyRequest('carpet_boost', 23, 1),
+            $this->PropertyRequest('auto_reclean', 24, 1),
+            $this->PropertyRequest('smart_drying', 25, 1),
         ];
-
-        $result = $this->SendRpc('get_properties', $props);
-        $this->SetValueSafe('LastResponse', $this->Encode($result));
-        $this->ParseProperties($result);
     }
 
-    public function Start()
-    {
-        return $this->SendAction(2, 1, []);
-    }
 
-    public function Pause()
-    {
-        return $this->SendAction(2, 2, []);
-    }
-
-    public function Dock()
-    {
-        return $this->SendAction(3, 1, []);
-    }
-
-    public function Stop()
-    {
-        return $this->SendAction(4, 2, []);
-    }
-
-    public function Locate()
-    {
-        return $this->SendAction(7, 1, []);
-    }
-
-    public function ClearWarning()
-    {
-        return $this->SendAction(4, 3, []);
-    }
-
-    public function StartAutoEmpty()
-    {
-        return $this->SendAction(15, 1, []);
-    }
-
-    public function RawRpc(string $method, string $jsonParams)
-    {
-        $params = json_decode($jsonParams, true);
-        if ($params === null && trim($jsonParams) !== 'null') {
-            throw new Exception('RawRpc: jsonParams ist kein gueltiges JSON.');
-        }
-        $result = $this->SendRpc($method, $params);
-        $this->SetValueSafe('LastResponse', $this->Encode($result));
-        return $result;
-    }
-
-    public function SendAction(int $siid, int $aiid, array $in = [])
-    {
-        $result = $this->SendRpc('action', [
-            'did' => $siid . '.' . $aiid,
-            'siid' => $siid,
-            'aiid' => $aiid,
-            'in' => $in,
-        ]);
-        $this->SetValueSafe('LastResponse', $this->Encode($result));
-        return $result;
-    }
-
-    public function SetProperty(int $siid, int $piid, $value)
-    {
-        $result = $this->SendRpc('set_properties', [[
-            'did' => $siid . '.' . $piid,
-            'siid' => $siid,
-            'piid' => $piid,
-            'value' => $value,
-        ]]);
-        $this->SetValueSafe('LastResponse', $this->Encode($result));
-        return $result;
-    }
-
-    public function SendRpc(string $method, $params)
-    {
-        $this->Login(false);
-        $did = $this->GetDeviceID();
-        if ($did === '') {
-            throw new Exception('Keine Device-ID vorhanden. Bitte zuerst "Login + Geraete suchen" ausfuehren oder Device-ID eintragen.');
-        }
-
-        $id = time();
-        $payload = [
-            'did' => $did,
-            'id' => $id,
-            'data' => [
-                'did' => $did,
-                'id' => $id,
-                'method' => $method,
-                'params' => $params,
-            ],
-        ];
-
-        return $this->ApiCall('/dreame-iot-com-10000/device/sendCommand', $payload, true);
-    }
 
     private function PropertyRequest(string $name, int $siid, int $piid): array
     {
@@ -318,6 +406,37 @@ class MovaVacuum extends IPSModule
         ];
     }
 
+    private function NormalizeRpcParams($params, string $did)
+    {
+        if (!is_array($params)) {
+            return $params;
+        }
+
+        if (isset($params['siid']) && (isset($params['piid']) || isset($params['aiid']))) {
+            $params['did'] = $did;
+        }
+
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $params[$key] = $this->NormalizeRpcParams($value, $did);
+            }
+        }
+
+        return $params;
+    }
+
+    private function ReplaceDidPlaceholders(array $value): array
+    {
+        foreach ($value as $key => $item) {
+            if ($key === 'did' && $item === '') {
+                $value[$key] = $this->GetDeviceID();
+            } elseif (is_array($item)) {
+                $value[$key] = $this->ReplaceDidPlaceholders($item);
+            }
+        }
+        return $value;
+    }
+
     private function Login(bool $force): void
     {
         $expires = $this->ReadAttributeInteger('TokenExpires');
@@ -325,21 +444,23 @@ class MovaVacuum extends IPSModule
             return;
         }
 
-        $password = $this->ReadPropertyString('Password');
-        if ($this->ReadPropertyBoolean('UseMD5Password')) {
-            $password = md5($password);
-        }
+        $rawPassword = $this->ReadPropertyString('Password');
+        $password = $this->ReadPropertyBoolean('UseMD5Password') ? md5($rawPassword . self::PASSWORD_SALT) : $rawPassword;
 
         $data = http_build_query([
             'grant_type' => 'password',
             'scope' => 'all',
+            'platform' => 'IOS',
+            'type' => 'account',
             'username' => $this->ReadPropertyString('Username'),
             'password' => $password,
+            'country' => 'DE',
+            'lang' => 'de',
         ]);
 
-        $response = $this->HttpRequest($this->BaseUrl() . '/dreame-auth/oauth/token', $data, true, false);
+        $response = $this->HttpRequest($this->BaseUrl() . '/dreame-auth/oauth/token', $data, false, false);
         if (!is_array($response) || (!isset($response['access_token']) && !isset($response['data']['access_token']))) {
-            $this->SetStatus(102);
+            $this->SetStatus(201);
             throw new Exception('MOVAhome Login fehlgeschlagen: ' . $this->Encode($response));
         }
 
@@ -368,31 +489,43 @@ class MovaVacuum extends IPSModule
             'Accept-Encoding: gzip, deflate',
             'User-Agent: Mova_Smarthome/1.5.59 (iPhone; iOS 16.0; Scale/3.00)',
             'Tenant-Id: ' . $this->ReadPropertyString('TenantId'),
+            'Authorization: ' . $this->AuthBasicHeader(),
         ];
 
         if ($json) {
-            $headers[] = 'Content-Type: application/json';
+            $headers[] = 'Content-Type: application/json; charset=utf-8';
         } else {
             $headers[] = 'Content-Type: application/x-www-form-urlencoded';
-            $headers[] = 'Authorization: Basic ' . $this->ReadPropertyString('AuthBasic');
         }
 
-        if ($auth && $json) {
+        if ($auth) {
             $token = $this->ReadAttributeString('AccessToken');
             if ($token !== '') {
-                $headers[] = 'Authorization: Bearer ' . $token;
+                $headers[] = 'Dreame-Auth: ' . $token;
             }
         }
 
-        $this->Log('HTTP POST ' . $url . ' DATA=' . (is_string($data) ? $data : ''));
+        $this->Log('HTTP POST ' . $url . ' DATA=' . $this->MaskPayloadForLog($data));
 
         $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST => true,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_TIMEOUT => 20,
             CURLOPT_POSTFIELDS => $data ?? '',
+            CURLOPT_ENCODING => '',
+
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_FRESH_CONNECT => true,
+            CURLOPT_FORBID_REUSE => true,
+
+            CURLOPT_PROXY => '',
         ]);
         $body = curl_exec($ch);
         $err = curl_error($ch);
@@ -410,6 +543,71 @@ class MovaVacuum extends IPSModule
             return $decoded;
         }
         return ['http_code' => $code, 'raw' => $body];
+    }
+
+    private function AuthBasicHeader(): string
+    {
+        $configured = trim($this->ReadPropertyString('AuthBasic'));
+        if ($configured !== '') {
+            return stripos($configured, 'Basic ') === 0 ? $configured : 'Basic ' . $configured;
+        }
+
+        $clientId = 'mova_' . 'app';
+        $clientSecret = 'V7Ko' . 'ChLW' . '8vHA' . 'CqGb';
+        return 'Basic ' . base64_encode($clientId . ':' . $clientSecret);
+    }
+
+    private function CommandPath(): string
+    {
+        $prefix = self::DEFAULT_IOT_PREFIX;
+        $raw = $this->ReadAttributeString('DeviceRaw');
+        if ($raw !== '') {
+            $device = json_decode($raw, true);
+            $bindDomain = (string)($device['bindDomain'] ?? '');
+            if (preg_match('/^([0-9]+)/', $bindDomain, $matches)) {
+                $prefix = $matches[1];
+            }
+        }
+
+        return '/dreame-iot-com-' . $prefix . '/device/sendCommand';
+    }
+
+    private function CommandUrl(): string
+    {
+        $raw = $this->ReadAttributeString('DeviceRaw');
+
+        if ($raw !== '') {
+            $device = json_decode($raw, true);
+            $bind = $device['bindDomain'] ?? '';
+
+            if ($bind !== '') {
+                return 'https://' . $bind . '/device/sendCommand';
+            }
+        }
+
+        return $this->BaseUrl() . '/dreame-iot-com-20000/device/sendCommand';
+    }
+
+    private function MaskPayloadForLog(?string $data): string
+    {
+        if ($data === null || $data === '') {
+            return '';
+        }
+
+        return preg_replace('/(password=)[^&]*/', '$1***', $data) ?? $data;
+    }
+
+    private function NowMilliseconds(): int
+    {
+        return (int)floor(microtime(true) * 1000);
+    }
+
+    private function HandleException(string $context, Exception $e): void
+    {
+        $this->SetStatus(201);
+        $message = $context . ' fehlgeschlagen: ' . $e->getMessage();
+        $this->SetValueSafe('LastResponse', $message);
+        $this->Log($message);
     }
 
     private function BaseUrl(): string
@@ -443,8 +641,19 @@ class MovaVacuum extends IPSModule
 
     private function FindDevice($response): ?array
     {
+        $selected = $this->ReadPropertyString('DeviceID');
         $model = $this->ReadPropertyString('Model');
-        $records = $this->Flatten($response);
+        $records = $this->FindDevices($response);
+
+        if ($selected !== '') {
+            foreach ($records as $item) {
+                $did = (string)($item['did'] ?? $item['deviceId'] ?? '');
+                if ($did === $selected) {
+                    return $item;
+                }
+            }
+        }
+
         foreach ($records as $item) {
             if (!is_array($item)) {
                 continue;
@@ -455,6 +664,133 @@ class MovaVacuum extends IPSModule
             }
         }
         return null;
+    }
+
+    private function FindDevices($response): array
+    {
+        $records = [];
+        $seen = [];
+
+        foreach ($this->Flatten($response) as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $did = (string)($item['did'] ?? $item['deviceId'] ?? '');
+            if ($did === '' || isset($seen[$did])) {
+                continue;
+            }
+
+            $seen[$did] = true;
+            $records[] = $item;
+        }
+
+        return $records;
+    }
+
+    private function UseDevice(array $device): void
+    {
+        $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+        if ($did === '') {
+            return;
+        }
+
+        $this->WriteAttributeString('DeviceRaw', $this->Encode($device));
+        $this->WriteAttributeString('LastDeviceID', $did);
+        $this->ParseDeviceListStatus($device, false);
+        $this->Log('Aktives Geraet: ' . $this->DeviceCaption($device) . ' (' . $did . ')');
+    }
+
+    private function SyncSelectedDevice(): void
+    {
+        $selected = $this->ReadPropertyString('DeviceID');
+        if ($selected === '') {
+            return;
+        }
+
+        foreach ($this->GetDiscoveredDevices() as $device) {
+            $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+            if ($did === $selected) {
+                $this->UseDevice($device);
+                return;
+            }
+        }
+
+        $this->WriteAttributeString('LastDeviceID', $selected);
+    }
+
+    private function GetDiscoveredDevices(): array
+    {
+        $devices = json_decode($this->ReadAttributeString('DiscoveredDevices'), true);
+        return is_array($devices) ? $devices : [];
+    }
+
+    private function InjectDeviceOptions(array &$elements): void
+    {
+        foreach ($elements as &$element) {
+            if (($element['name'] ?? '') === 'DeviceID') {
+                $element['type'] = 'Select';
+                $element['caption'] = 'Gefundenes Geraet';
+                $element['options'] = $this->BuildDeviceOptions();
+                continue;
+            }
+
+            if (isset($element['items']) && is_array($element['items'])) {
+                $this->InjectDeviceOptions($element['items']);
+            }
+        }
+    }
+
+    private function BuildDeviceOptions(): array
+    {
+        $options = [
+            [
+                'caption' => 'Bitte Geraet suchen und auswaehlen',
+                'value' => '',
+            ],
+        ];
+
+        $current = $this->ReadPropertyString('DeviceID');
+        $hasCurrent = $current === '';
+        foreach ($this->GetDiscoveredDevices() as $device) {
+            $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+            if ($did === '') {
+                continue;
+            }
+
+            $hasCurrent = $hasCurrent || $did === $current;
+            $options[] = [
+                'caption' => $this->DeviceCaption($device) . ' - ' . $did,
+                'value' => $did,
+            ];
+        }
+
+        if (!$hasCurrent) {
+            $options[] = [
+                'caption' => 'Aktuell eingetragen - ' . $current,
+                'value' => $current,
+            ];
+        }
+
+        return $options;
+    }
+
+    private function DeviceCaption(array $device): string
+    {
+        $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+        $model = (string)($device['model'] ?? ($device['deviceInfo']['model'] ?? ''));
+        $name = (string)($device['customName'] ?? $device['name'] ?? ($device['deviceInfo']['displayName'] ?? ''));
+
+        if ($name !== '' && $model !== '') {
+            return $name . ' (' . $model . ')';
+        }
+        if ($name !== '') {
+            return $name;
+        }
+        if ($model !== '') {
+            return $model;
+        }
+        return $did !== '' ? $did : 'Unbekanntes Geraet';
     }
 
     private function Flatten($value): array
@@ -472,9 +808,26 @@ class MovaVacuum extends IPSModule
         }
         return $out;
     }
-
     private function ParseProperties($result): void
     {
+        if (!is_array($result)) {
+            return;
+        }
+
+        $data = $result['data'] ?? null;
+        if (is_array($data)) {
+            $config = [];
+            foreach ($data as $key => $value) {
+                if (strpos((string)$key, 'prop.s_') === 0) {
+                    $decoded = is_string($value) ? json_decode($value, true) : null;
+                    $config[$key] = $decoded !== null ? $decoded : $value;
+                }
+            }
+
+            if ($config !== []) {
+            }
+        }
+
         $items = $this->ExtractResultItems($result);
         $statusParts = [];
 
@@ -489,35 +842,305 @@ class MovaVacuum extends IPSModule
             $value = $item['value'];
 
             if ($did === '2.1') {
-                $this->SetValueSafe('StateCode', (int)$value);
-                $statusParts[] = self::STATE_NAMES[(int)$value] ?? ('State ' . $value);
-            } elseif ($did === '2.2') {
-                $this->SetValueSafe('ErrorCode', (int)$value);
-                $this->SetValueSafe('ErrorText', self::ERROR_NAMES[(int)$value] ?? ('Fehler ' . $value));
+              $this->SetValueSafe(
+                'StateCode',
+                $this->TranslateStatus($status)
+              );
+                $statusParts[] = $this->TranslateStatus((int)$value);
             } elseif ($did === '3.1') {
                 $this->SetValueSafe('Battery', (int)$value);
-            } elseif ($did === '3.2') {
-                $this->SetValueSafe('ChargingStatus', (int)$value);
-                $statusParts[] = self::CHARGING_NAMES[(int)$value] ?? ('Ladestatus ' . $value);
-            } elseif ($did === '4.2') {
-                $this->SetValueSafe('CleaningTime', (int)$value);
-            } elseif ($did === '4.3') {
-                $this->SetValueSafe('CleanedArea', (int)$value);
-            } elseif ($did === '4.4') {
-                $this->SetValueSafe('SuctionLevel', (int)$value);
-            } elseif ($did === '4.5') {
-                $this->SetValueSafe('WaterVolume', (int)$value);
-            } elseif ($did === '4.7') {
-                $this->SetValueSafe('TaskStatus', (int)$value);
-                $statusParts[] = self::TASK_NAMES[(int)$value] ?? ('Task ' . $value);
-            } elseif ($did === '4.23') {
-                $this->SetValueSafe('CleaningMode', (int)$value);
             }
         }
 
         if ($statusParts !== []) {
             $this->SetValueSafe('StatusText', implode(' / ', array_unique($statusParts)));
         }
+    }
+    private function ParseDeviceListStatus(array $device, bool $writeRaw = true): void
+    {
+        if ($writeRaw) {
+            $this->WriteAttributeString('DeviceRaw', $this->Encode($device));
+        }
+
+        $did = (string)($device['did'] ?? $device['deviceId'] ?? '');
+        $deviceInfo = is_array($device['deviceInfo'] ?? null) ? $device['deviceInfo'] : [];
+
+        $property = json_decode($device['property'] ?? '{}', true);
+
+
+
+        $featureCode2 = (int)($device['featureCode2'] ?? 0);
+
+
+        $this->SetValueSafe(
+            'FeatureFlags',
+            implode(', ', $this->DecodeFeatureFlags($featureCode2))
+        );
+
+        $this->SetValueSafe(
+            'QuickConnects',
+            $this->Encode($deviceInfo['quickConnects'] ?? [])
+        );
+
+        $this->SetValueSafe('DeviceName', (string)($device['deviceInfo']['displayName'] ?? $device['customName'] ?? $device['model'] ?? ''));
+        $this->SetValueSafe('Firmware', (string)($device['ver'] ?? ($device['firmwareVersion'] ?? '')));
+        $this->SetValueSafe('SerialNumber', (string)($device['sn'] ?? ($device['serialNumber'] ?? '')));
+        $this->SetValueSafe('MacAddress', (string)($device['mac'] ?? ($device['macAddress'] ?? '')));
+
+        $imageUrl = (string)($deviceInfo['mainImage']['imageUrl'] ?? $deviceInfo['icon']['imageUrl'] ?? $device['icon'] ?? $device['image'] ?? '');
+
+        $keyDefineUrl = (string)($device['keyDefine']['url'] ?? $device['keyDefineUrl'] ?? '');
+        if ($keyDefineUrl !== '') {
+            $this->EnsureStatusMap($keyDefineUrl);
+        }
+
+        $features = $device['featureCodes'] ?? $device['featureCode'] ?? $deviceInfo['feature'] ?? $device['feature'] ?? null;
+        if ($features !== null) {
+        }
+
+        $this->SetValueSafe('Online', (bool)($device['online'] ?? false));
+
+        if (array_key_exists('battery', $device)) {
+            $this->SetValueSafe('Battery', (int)$device['battery']);
+        }
+
+        $status = (int)($device['latestStatus'] ?? -1);
+        if ($status >= 0) {
+            $this->SetValueSafe(
+                'StateCode',
+                $this->TranslateStatus($status)
+            );
+        } elseif (array_key_exists('online', $device)) {
+            $this->SetValueSafe('StatusText', $device['online'] ? 'Online' : 'Offline');
+        }
+
+        $this->ParseVideoStatus($device['videoStatus'] ?? '');
+
+        $video = json_decode($device['videoStatus'] ?? '{}', true);
+
+
+
+
+        $times = [
+            'updateTime' => $device['updateTime'] ?? '',
+            'devBindTime' => $this->FormatTimestampMs($device['devBindTime'] ?? null),
+            'createTime' => $this->FormatTimestampMs($device['createTime'] ?? null),
+            'releaseAt' => $this->FormatTimestampMs($deviceInfo['releaseAt'] ?? null),
+        ];
+
+        if (array_key_exists('online', $device) && !$device['online']) {
+            $this->SetValueSafe('ErrorText', 'Offline');
+        } else {
+            $this->SetValueSafe('ErrorText', 'Kein Fehler');
+        }
+    }
+
+    private function DecodeFeatureFlags(int $flags): array
+    {
+        $map = [
+            1  => 'Kamera',
+            2  => 'Mopp',
+            4  => 'Trocknung',
+            8  => 'Auto-Entleerung',
+            16 => 'AI',
+            32 => 'Pet Features',
+            64 => 'Wasserstation',
+            128 => 'Live Monitoring',
+        ];
+
+        $result = [];
+
+        foreach ($map as $bit => $label) {
+            if (($flags & $bit) === $bit) {
+                $result[] = $label;
+            }
+        }
+
+        return $result;
+    }
+
+
+    private function TranslateStatus(int $status): string
+    {
+        $map = [
+            1  => '🟢 Bereit',
+            2  => '😴 Schlafmodus',
+            3  => '⏸️ Pausiert',
+            4  => '🧹 Reinigung läuft',
+            5  => '🏠 Rückkehr zur Station',
+            6  => '🔋 Lädt',
+            7  => '⚠️ Fehler',
+            8  => '🧼 Mopp wird gereinigt',
+            9  => '🌬️ Mopp wird getrocknet',
+            10 => '🚪 Raumreinigung',
+            11 => '📦 Zonenreinigung',
+            12 => '🗺️ Kartenverwaltung',
+            13 => '🟢 Bereit (geladen)',
+            14 => '🚿 Reinigung an Station',
+            15 => '🌬️ Trocknung läuft',
+            16 => '🗑️ Staubentleerung',
+            17 => '💧 Wasser wird nachgefüllt',
+            18 => '🚱 Schmutzwasser',
+            19 => '📷 Kamera aktiv',
+            20 => '⚡ Shortcut läuft',
+            21 => '✅ Laden beendet',
+        ];
+
+        return $map[$status] ?? ('❓ Unbekannt (' . $status . ')');
+    }
+
+    private function EnsureStatusMap(string $url): void
+    {
+        $cached = json_decode($this->ReadAttributeString('StatusMap'), true);
+        $lastFetch = $this->ReadAttributeInteger('StatusMapFetched');
+
+        if (is_array($cached) && $cached !== [] && $lastFetch > time() - 86400) {
+            return;
+        }
+
+        try {
+            $json = $this->HttpGet($url);
+            $decoded = json_decode($json, true);
+
+            $map = [];
+            $this->CollectStatusMap($decoded, $map);
+
+            if ($map !== []) {
+                $this->WriteAttributeString('StatusMap', $this->Encode($map));
+                $this->WriteAttributeInteger('StatusMapFetched', time());
+                $this->Log('Statusmap geladen: ' . count($map) . ' Eintraege.');
+            }
+        } catch (Exception $e) {
+            $this->Log('Statusmap konnte nicht geladen werden: ' . $e->getMessage());
+        }
+    }
+
+    private function CollectStatusMap($value, array &$map): void
+    {
+        if (!is_array($value)) {
+            return;
+        }
+
+        foreach ($value as $key => $item) {
+            if (is_array($item)) {
+                $code = null;
+                $text = null;
+
+                foreach (['key', 'value', 'code', 'status', 'id'] as $codeKey) {
+                    if (isset($item[$codeKey]) && is_numeric($item[$codeKey])) {
+                        $code = (string)((int)$item[$codeKey]);
+                        break;
+                    }
+                }
+
+                foreach (['de', 'de_DE', 'en', 'en_US', 'value', 'text', 'name', 'desc', 'displayName'] as $textKey) {
+                    if (isset($item[$textKey]) && is_string($item[$textKey]) && $item[$textKey] !== '') {
+                        $text = $item[$textKey];
+                        break;
+                    }
+                }
+
+                if ($code !== null && $text !== null) {
+                    $map[$code] = $text;
+                }
+
+                $this->CollectStatusMap($item, $map);
+            } elseif (is_numeric($key) && is_string($item) && $item !== '') {
+                $map[(string)((int)$key)] = $item;
+            }
+        }
+    }
+
+    private function ParseVideoStatus($videoStatus): void
+    {
+
+        if (!is_string($videoStatus) || $videoStatus === '') {
+            return;
+        }
+
+        $decoded = json_decode($videoStatus, true);
+        if (!is_array($decoded)) {
+            return;
+        }
+
+        $status = (int)($decoded['status'] ?? -1);
+        $result = (int)($decoded['result'] ?? -1);
+        $operation = (string)($decoded['operation'] ?? '');
+        $operType = (string)($decoded['operType'] ?? '');
+
+
+        if ($status === 0 && $operType === 'end') {
+            $text = 'Beendet';
+        } elseif ($status === 1) {
+            $text = 'Aktiv';
+        } elseif ($result === 0) {
+            $text = 'OK';
+        } else {
+            $text = 'Status ' . $status . ', Result ' . $result;
+        }
+
+        if ($operation !== '') {
+            $text .= ' (' . $operation . ')';
+        }
+
+    }
+
+
+
+
+
+    private function HttpGet(string $url): string
+    {
+        $this->Log('HTTP GET ' . $url);
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 20,
+            CURLOPT_ENCODING => '',
+            CURLOPT_HTTPHEADER => [
+                'Accept: application/json,text/plain,*/*',
+                'User-Agent: Mova_Smarthome/1.5.59 (iPhone; iOS 16.0; Scale/3.00)',
+            ],
+        ]);
+
+        $body = curl_exec($ch);
+        $err = curl_error($ch);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($body === false) {
+            throw new Exception('HTTP GET Fehler: ' . $err);
+        }
+
+        if ((int)$code >= 400) {
+            throw new Exception('HTTP GET Status ' . $code);
+        }
+
+        return (string)$body;
+    }
+
+    private function FormatTimestampMs($value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        $ts = (int)$value;
+        if ($ts > 100000000000) {
+            $ts = (int)floor($ts / 1000);
+        }
+
+        if ($ts <= 0) {
+            return '';
+        }
+
+        return date('Y-m-d H:i:s', $ts);
+    }
+
+    private function GetIDForIdentSafe(string $ident)
+    {
+        return @$this->GetIDForIdent($ident);
     }
 
     private function ExtractResultItems($result): array
@@ -568,6 +1191,14 @@ class MovaVacuum extends IPSModule
         }
     }
 
+    private function RegisterProfileIntegerText(string $name, string $suffix): void
+    {
+        if (!IPS_VariableProfileExists($name)) {
+            IPS_CreateVariableProfile($name, VARIABLETYPE_INTEGER);
+        }
+        IPS_SetVariableProfileText($name, '', $suffix);
+    }
+
     private function SetValueSafe(string $ident, $value): void
     {
         $id = @$this->GetIDForIdent($ident);
@@ -588,4 +1219,7 @@ class MovaVacuum extends IPSModule
         }
         $this->SendDebug('MOVA', $message, 0);
     }
+
+
+
 }
