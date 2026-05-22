@@ -77,72 +77,9 @@
           "type": "Button",
           "caption": "Status aktualisieren",
           "onClick": "MOVA_Refresh($id);"
-        },
-        {
-          "type": "Button",
-          "caption": "Default Properties testen",
-          "onClick": "MOVA_TestDefaultProperties($id);"
         }
       ]
-    },
-    {
-      "type": "ExpansionPanel",
-      "caption": "Expertenwerte",
-      "expanded": false,
-      "items": [
-        {
-          "type": "ValidationTextBox",
-          "name": "BaseUrl",
-          "caption": "Base URL leer = automatisch"
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "AuthBasic",
-          "caption": "Auth Basic leer = automatisch"
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "TenantId",
-          "caption": "Tenant-ID"
-        },
-        {
-          "type": "ValidationTextBox",
-          "name": "Model",
-          "caption": "Modellfilter optional"
-        }
-      ]
-    },
-    {
-    "type": "ExpansionPanel",
-    "caption": "ReadOnly Explorer",
-    "items": [
-      {
-        "type": "Button",
-        "caption": "Reinigungshistorie testen",
-        "onClick": "MOVA_TestCleaningHistory($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Task-Liste testen",
-        "onClick": "MOVA_TestTaskList($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Kartenliste testen",
-        "onClick": "MOVA_TestMapList($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Device-Status testen",
-        "onClick": "MOVA_TestDeviceStatus($id);"
-      },
-      {
-        "type": "Button",
-        "caption": "Device-Info testen",
-        "onClick": "MOVA_TestDeviceInfo($id);"
-      }
-    ]
-  }
+    }
   ],
   "actions": [
     {
