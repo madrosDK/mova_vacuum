@@ -122,26 +122,26 @@ class MovaVacuum extends IPSModule
             IPS_CreateVariableProfile('MOVA.Status', VARIABLETYPE_INTEGER);
 
             IPS_SetVariableProfileAssociation('MOVA.Status', 1,  '🟢 Bereit', '', 0x27AE60);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 2,  '😴 Schlafmodus', '', 0xAAAAAA);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 3,  '⏸️ Pausiert', '', 0xFFFF00);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 4,  '🧹 Reinigung läuft', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 5,  '🏠 Rückkehr zur Station', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 2,  '😴 Schlafmodus', '', 0x7F8C8D);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 3,  '⏸️ Pausiert', '', 0xF1C40F);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 4,  '🧹 Reinigung läuft', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 5,  '🏠 Rückkehr zur Station', '', 0x0070c0);
             IPS_SetVariableProfileAssociation('MOVA.Status', 6,  '🔋 Lädt', '', 0x27AE60);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 7,  '⚠️ Fehler', '', 0xFF0000);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 8,  '🧼 Mopp wird gereinigt', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 9,  '🌬️ Mopp wird getrocknet', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 10, '🚪 Raumreinigung', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 11, '📦 Zonenreinigung', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 12, '🗺️ Kartenverwaltung', '', 0xAAAAAA);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 13, '🟢 Bereit (geladen)', '', 0x00FF00);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 14, '🚿 Reinigung an Station', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 15, '🌬️ Trocknung läuft', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 16, '🗑️ Staubentleerung', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 17, '💧 Wasser wird nachgefüllt', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 18, '🚱 Schmutzwasser', '', 0xFF8800);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 19, '📷 Kamera aktiv', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 20, '⚡ Shortcut läuft', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 21, '✅ Laden beendet', '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 7,  '⚠️ Fehler', '', 0xC0392B);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 8,  '🧼 Mopp wird gereinigt', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 9,  '🌬️ Mopp wird getrocknet', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 10, '🚪 Raumreinigung', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 11, '📦 Zonenreinigung', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 12, '🗺️ Kartenverwaltung', '', 0x7F8C8D);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 13, '🟢 Bereit (geladen)', '', 0x27AE60);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 14, '🚿 Reinigung an Station', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 15, '🌬️ Trocknung läuft', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 16, '🗑️ Staubentleerung', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 17, '💧 Wasser wird nachgefüllt', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 18, '🚱 Schmutzwasser', '', 0xE67E22);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 19, '📷 Kamera aktiv', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 20, '⚡ Shortcut läuft', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 21, '✅ Laden beendet', '', 0x27AE60);
         }
 
 
