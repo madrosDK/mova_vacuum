@@ -121,19 +121,19 @@ class MovaVacuum extends IPSModule
 
             IPS_CreateVariableProfile('MOVA.Status', VARIABLETYPE_INTEGER);
 
-            IPS_SetVariableProfileAssociation('MOVA.Status', 1,  '🟢 Bereit', '', 0x27AE60);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 1,  '🟢 Bereit', '', 0x2F3B52);
             IPS_SetVariableProfileAssociation('MOVA.Status', 2,  '😴 Schlafmodus', '', 0x7F8C8D);
             IPS_SetVariableProfileAssociation('MOVA.Status', 3,  '⏸️ Pausiert', '', 0xF1C40F);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 4,  '🧹 Reinigung läuft', '', 0x0070c0);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 4,  '🧹 Reinigung läuft', '', 0x27AE60);
             IPS_SetVariableProfileAssociation('MOVA.Status', 5,  '🏠 Rückkehr zur Station', '', 0x0070c0);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 6,  '🔋 Lädt', '', 0x27AE60);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 6,  '🔋 Lädt', '', 0x2F3B52);
             IPS_SetVariableProfileAssociation('MOVA.Status', 7,  '⚠️ Fehler', '', 0xC0392B);
             IPS_SetVariableProfileAssociation('MOVA.Status', 8,  '🧼 Mopp wird gereinigt', '', 0x0070c0);
             IPS_SetVariableProfileAssociation('MOVA.Status', 9,  '🌬️ Mopp wird getrocknet', '', 0x0070c0);
             IPS_SetVariableProfileAssociation('MOVA.Status', 10, '🚪 Raumreinigung', '', 0x0070c0);
             IPS_SetVariableProfileAssociation('MOVA.Status', 11, '📦 Zonenreinigung', '', 0x0070c0);
             IPS_SetVariableProfileAssociation('MOVA.Status', 12, '🗺️ Kartenverwaltung', '', 0x7F8C8D);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 13, '🟢 Bereit (geladen)', '', 0x27AE60);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 13, '🟢 Bereit (geladen)', '', 0x2F3B52);
             IPS_SetVariableProfileAssociation('MOVA.Status', 14, '🚿 Reinigung an Station', '', 0x0070c0);
             IPS_SetVariableProfileAssociation('MOVA.Status', 15, '🌬️ Trocknung läuft', '', 0x0070c0);
             IPS_SetVariableProfileAssociation('MOVA.Status', 16, '🗑️ Staubentleerung', '', 0x0070c0);
