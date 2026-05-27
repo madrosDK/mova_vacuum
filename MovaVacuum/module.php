@@ -126,7 +126,7 @@ class MovaVacuum extends IPSModule
             IPS_SetVariableProfileAssociation('MOVA.Status', 3,  '⏸️ Pausiert', '', 0xFFFF00);
             IPS_SetVariableProfileAssociation('MOVA.Status', 4,  '🧹 Reinigung läuft', '', 0x00AAFF);
             IPS_SetVariableProfileAssociation('MOVA.Status', 5,  '🏠 Rückkehr zur Station', '', 0x00AAFF);
-            IPS_SetVariableProfileAssociation('MOVA.Status', 6,  '🔋 Lädt', '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 6,  '🔋 Lädt', '', 0x27AE60);
             IPS_SetVariableProfileAssociation('MOVA.Status', 7,  '⚠️ Fehler', '', 0xFF0000);
             IPS_SetVariableProfileAssociation('MOVA.Status', 8,  '🧼 Mopp wird gereinigt', '', 0x00AAFF);
             IPS_SetVariableProfileAssociation('MOVA.Status', 9,  '🌬️ Mopp wird getrocknet', '', 0x00AAFF);
