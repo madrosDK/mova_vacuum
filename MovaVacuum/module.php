@@ -121,7 +121,7 @@ class MovaVacuum extends IPSModule
 
             IPS_CreateVariableProfile('MOVA.Status', VARIABLETYPE_INTEGER);
 
-            IPS_SetVariableProfileAssociation('MOVA.Status', 1,  '🟢 Bereit', '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 1,  '🟢 Bereit', '', 0x27AE60);
             IPS_SetVariableProfileAssociation('MOVA.Status', 2,  '😴 Schlafmodus', '', 0xAAAAAA);
             IPS_SetVariableProfileAssociation('MOVA.Status', 3,  '⏸️ Pausiert', '', 0xFFFF00);
             IPS_SetVariableProfileAssociation('MOVA.Status', 4,  '🧹 Reinigung läuft', '', 0x00AAFF);
