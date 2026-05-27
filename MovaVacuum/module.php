@@ -117,7 +117,33 @@ class MovaVacuum extends IPSModule
     {
         parent::Create();
 
-        
+        if (!IPS_VariableProfileExists('MOVA.Status')) {
+
+            IPS_CreateVariableProfile('MOVA.Status', VARIABLETYPE_INTEGER);
+
+            IPS_SetVariableProfileAssociation('MOVA.Status', 1,  '🟢 Bereit', '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 2,  '😴 Schlafmodus', '', 0xAAAAAA);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 3,  '⏸️ Pausiert', '', 0xFFFF00);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 4,  '🧹 Reinigung läuft', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 5,  '🏠 Rückkehr zur Station', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 6,  '🔋 Lädt', '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 7,  '⚠️ Fehler', '', 0xFF0000);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 8,  '🧼 Mopp wird gereinigt', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 9,  '🌬️ Mopp wird getrocknet', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 10, '🚪 Raumreinigung', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 11, '📦 Zonenreinigung', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 12, '🗺️ Kartenverwaltung', '', 0xAAAAAA);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 13, '🟢 Bereit (geladen)', '', 0x00FF00);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 14, '🚿 Reinigung an Station', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 15, '🌬️ Trocknung läuft', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 16, '🗑️ Staubentleerung', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 17, '💧 Wasser wird nachgefüllt', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 18, '🚱 Schmutzwasser', '', 0xFF8800);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 19, '📷 Kamera aktiv', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 20, '⚡ Shortcut läuft', '', 0x00AAFF);
+            IPS_SetVariableProfileAssociation('MOVA.Status', 21, '✅ Laden beendet', '', 0x00FF00);
+        }
+
 
         $this->RegisterPropertyString('Username', '');
         $this->RegisterPropertyString('Password', '');
@@ -172,17 +198,13 @@ class MovaVacuum extends IPSModule
 
         $this->RegisterVariableBoolean('Online', 'Online', '~Switch', 11);
         $this->RegisterVariableInteger('Battery', 'Akku', '~Battery.100', 12);
-        $this->RegisterVariableString('StateCode', 'Status');
-        
-
+        $this->RegisterVariableInteger(
+            'StateCode',
+            'Status',
+            'MOVA.Status'
+        );
 
         $this->RegisterVariableString('LastResponse', 'Letzte Antwort', '', 50);
-
-
-
-
-
-
 
         $this->SyncSelectedDevice();
 
@@ -842,10 +864,7 @@ class MovaVacuum extends IPSModule
             $value = $item['value'];
 
             if ($did === '2.1') {
-              $this->SetValueSafe(
-                'StateCode',
-                $this->TranslateStatus($status)
-              );
+              $this->SetValueSafe('StateCode', $status);
                 $statusParts[] = $this->TranslateStatus((int)$value);
             } elseif ($did === '3.1') {
                 $this->SetValueSafe('Battery', (int)$value);
@@ -906,10 +925,7 @@ class MovaVacuum extends IPSModule
 
         $status = (int)($device['latestStatus'] ?? -1);
         if ($status >= 0) {
-            $this->SetValueSafe(
-                'StateCode',
-                $this->TranslateStatus($status)
-            );
+            $this->SetValueSafe('StateCode', $status);
         } elseif (array_key_exists('online', $device)) {
             $this->SetValueSafe('StatusText', $device['online'] ? 'Online' : 'Offline');
         }
@@ -959,35 +975,6 @@ class MovaVacuum extends IPSModule
         return $result;
     }
 
-
-    private function TranslateStatus(int $status): string
-    {
-        $map = [
-            1  => '🟢 Bereit',
-            2  => '😴 Schlafmodus',
-            3  => '⏸️ Pausiert',
-            4  => '🧹 Reinigung läuft',
-            5  => '🏠 Rückkehr zur Station',
-            6  => '🔋 Lädt',
-            7  => '⚠️ Fehler',
-            8  => '🧼 Mopp wird gereinigt',
-            9  => '🌬️ Mopp wird getrocknet',
-            10 => '🚪 Raumreinigung',
-            11 => '📦 Zonenreinigung',
-            12 => '🗺️ Kartenverwaltung',
-            13 => '🟢 Bereit (geladen)',
-            14 => '🚿 Reinigung an Station',
-            15 => '🌬️ Trocknung läuft',
-            16 => '🗑️ Staubentleerung',
-            17 => '💧 Wasser wird nachgefüllt',
-            18 => '🚱 Schmutzwasser',
-            19 => '📷 Kamera aktiv',
-            20 => '⚡ Shortcut läuft',
-            21 => '✅ Laden beendet',
-        ];
-
-        return $map[$status] ?? ('❓ Unbekannt (' . $status . ')');
-    }
 
     private function EnsureStatusMap(string $url): void
     {
